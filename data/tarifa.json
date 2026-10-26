@@ -1,0 +1,71 @@
+{
+ "id": "CASA-01",
+ "actualizado": "2026-10-26",
+ "fuente": "datos/tarifa-actual.md + datos/fiscalidad.md",
+ "vigente": {
+  "comercializadora": "Naturgy",
+  "producto": "Noche Luz ECO",
+  "peaje": "2.0TD",
+  "desde": "2026-04-30",
+  "permanencia": null,
+  "energia_eur_kwh": {
+   "P1": 0.1802,
+   "P2": 0.1072,
+   "P3": 0.0718
+  },
+  "excedente_eur_kwh": 0.06,
+  "compensacion": "simplificada, tope = término de energía, sin batería virtual",
+  "potencia": {
+   "P1": {
+    "kw": 7.6,
+    "eur_kw_dia": 0.12303
+   },
+   "P2": {
+    "kw": 7.6,
+    "eur_kw_dia": 0.037337
+   }
+  },
+  "bono_social_eur_dia": 0.024688,
+  "alquiler_contador_eur_dia": 0.02663
+ },
+ "fiscalidad_vigente": {
+  "desde": "2026-06-01",
+  "iee_pct": 5.11269632,
+  "iva_pct": 21,
+  "iee_minimo_eur_mwh": 1
+ },
+ "historial": [
+  {
+   "periodo": "jun-2025 a dic-2025",
+   "desde": "2025-05-31",
+   "hasta": "2025-12-31",
+   "tarifa": "Octopus Solar",
+   "energia": {
+    "P1": 0.181524,
+    "P2": 0.106543,
+    "P3": 0.069594
+   },
+   "excedente": 0.04,
+   "potencia_eur_kw_dia": {
+    "P1": 0.095,
+    "P2": 0.027
+   }
+  },
+  {
+   "periodo": "ene-2026 a 29-abr-2026",
+   "desde": "2026-01-01",
+   "hasta": "2026-04-29",
+   "tarifa": "Octopus Solar",
+   "energia": {
+    "P1": 0.18785,
+    "P2": 0.1089,
+    "P3": 0.07114
+   },
+   "excedente": 0.04,
+   "potencia_eur_kw_dia": {
+    "P1": 0.0972,
+    "P2": 0.0271
+   }
+  }
+ ]
+}
