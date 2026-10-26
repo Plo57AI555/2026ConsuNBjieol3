@@ -324,6 +324,10 @@ h3 .sm{display:none}
   .drow .donut{width:auto;flex-basis:auto;height:132px}
   .drow .donut .center b{font-size:22px}
 }
+.amp{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.amp button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.amp button:hover{color:var(--ink);border-color:var(--axis)}
+@media (max-width:720px){.inputs{grid-template-columns:1fr 1fr!important;gap:8px 10px}.inputs label{font-size:11.5px}.inputs input{font-size:14px;padding:5px 6px}.amp{grid-column:1/-1}}
 @media (max-width:520px){h1{font-size:22px}.chart{height:260px}.kpi .val{font-size:22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -487,9 +491,10 @@ h3 .sm{display:none}
     </div>
 
     <div class="panel">
-      <div class="panel-head"><h3>Plan semanal recomendado</h3>
-        <div class="legend"><span><i style="background:var(--s1)"></i>P1 punta</span><span><i style="background:var(--s2)"></i>P2 llano</span><span><i style="background:var(--s3)"></i>P3 valle</span><span><b class="pill b">X3</b> BMW</span><span><b class="pill t">M3</b> Tesla</span></div>
+      <div class="panel-head"><h3>Rotación semanal · un enchufe</h3>
+        <div class="legend"><span><i style="background:var(--s1)"></i>P1 punta</span><span><i style="background:var(--s2)"></i>P2 llano</span><span><i style="background:var(--s3)"></i>P3 valle</span><span><b class="pill b">X3</b> BMW X3</span><span><b class="pill t">M3</b> Tesla</span></div>
       </div>
+      <div class="tbl"><table id="cx-rot"></table></div>
       <div class="tbl"><div class="semana" id="cx-semana"></div></div>
       <p class="det">Festivos nacionales: todo el día en P3, igual que sábado y domingo.</p>
     </div>
@@ -866,128 +871,143 @@ cargar().then(({d,t})=>{
   /* ---------- Coches ---------- */
   (function coches(){
     const T=t.vigente, FX=t.fiscalidad_vigente, KTAX=(1+FX.iee_pct/100)*(1+FX.iva_pct/100);
-    const PH={nombre:"BMW X3 30e",util:19.7,km:85}, BE={nombre:"Tesla Model 3 Standard"};
-    const DEF={phev_bat:20,phev_kmd:25,phev_kmf:30,phev_cons:23,phev_kw:3.7,bev_bat:60,bev_kmd:60,bev_kmf:60,bev_cons:14,bev_kw:3.7,ef:90,base_kw:1.5};
-    let P=Object.assign({},DEF), tax=true;
-    try{Object.assign(P,JSON.parse(localStorage.getItem("casa01-coches2")||"{}"))}catch(e){}
-    const e=x=>tax?x*KTAX:x, eu=(x,dd=2)=>fmt(e(x),dd)+" €";
+    const DEF={phev_bat:20,phev_cons:30,phev_kmd:25,phev_kmf:30,bev_bat:60,bev_cons:18,bev_kmd:60,bev_kmf:60,kw:3.7,fin:7.5,ef:90,base_kw:1.5};
+    let P=Object.assign({},DEF);
+    try{Object.assign(P,JSON.parse(localStorage.getItem("casa01-coches3")||"{}"))}catch(e){}
+    const e=x=>x*KTAX, eu=(x,dd=2)=>fmt(e(x),dd)+" €";
     const pr=T.energia_eur_kwh, exc=T.excedente_eur_kwh, pot=T.potencia;
-
     const campos=[
-      ["phev_bat","BMW · batería útil","kWh",5,30,0.1],
-      ["phev_kmd","BMW · km al día (L-V)","km",0,300,1],
-      ["phev_kmf","BMW · km del fin de semana (total)","km",0,600,5],
-      ["phev_cons","BMW · consumo eléctrico","kWh/100 km",15,35,0.5],
-      ["phev_kw","BMW · potencia de carga","kW",1,11,0.1],
+      ["phev_bat","X3 · batería útil","kWh",5,30,0.5],
+      ["phev_cons","X3 · consumo","kWh/100 km",15,40,0.5],
+      ["phev_kmd","X3 · km al día (L-V)","km",0,300,1],
+      ["phev_kmf","X3 · km del fin de semana","km",0,600,5],
       ["bev_bat","Tesla · batería útil","kWh",30,90,0.5],
+      ["bev_cons","Tesla · consumo","kWh/100 km",10,30,0.5],
       ["bev_kmd","Tesla · km al día (L-V)","km",0,500,1],
-      ["bev_kmf","Tesla · km del fin de semana (total)","km",0,1000,5],
-      ["bev_cons","Tesla · consumo real","kWh/100 km",10,25,0.5],
-      ["bev_kw","Tesla · potencia de carga","kW",1,11,0.1],
-      ["ef","Eficiencia de carga (red → batería)","%",70,98,1],
-      ["base_kw","Casa · carga nocturna sin coches","kW",0,7,0.1]];
+      ["bev_kmf","Tesla · km del fin de semana","km",0,1000,5],
+      ["kw","Potencia del cargador","kW",1,11,0.1],
+      ["fin","Desconexión entre semana (desde 0:00)","h",1,8,0.25],
+      ["ef","Eficiencia de carga","%",70,98,1],
+      ["base_kw","Casa de noche sin coche","kW",0,7,0.1]];
     document.getElementById("cx-inputs").innerHTML=campos.map(([k,l,u,mi,ma,st])=>
-      `<label for="cx-${k}">${l}<span class="row"><input type="number" id="cx-${k}" min="${mi}" max="${ma}" step="${st}" value="${P[k]}"><small>${u}</small></span></label>`).join("");
-    campos.forEach(([k])=>document.getElementById("cx-"+k).addEventListener("input",ev=>{const v=parseFloat(ev.target.value);if(!isNaN(v)){P[k]=v;try{localStorage.setItem("casa01-coches2",JSON.stringify(P))}catch(e){}pintar()}}));
+      `<label for="cx-${k}">${l}<span class="row"><input type="number" id="cx-${k}" min="${mi}" max="${ma}" step="${st}" value="${P[k]}"><small>${u}</small></span></label>`).join("")+
+      `<div class="amp" role="group" aria-label="Potencia típica del cargador">${[["16 A",3.7],["20 A",4.6],["32 A",7.4]].map(([l,v])=>`<button type="button" data-kw="${v}">${l} · ${fmt(v,1)} kW</button>`).join("")}</div>`;
+    const guardar=()=>{try{localStorage.setItem("casa01-coches3",JSON.stringify(P))}catch(e){}};
+    campos.forEach(([k])=>document.getElementById("cx-"+k).addEventListener("input",ev=>{const v=parseFloat(ev.target.value);if(!isNaN(v)){P[k]=v;guardar();pintar()}}));
+    document.querySelectorAll("#cx-inputs .amp button").forEach(b=>b.onclick=()=>{P.kw=+b.dataset.kw;document.getElementById("cx-kw").value=P.kw;guardar();pintar()});
 
-    /* datos: E0 vs E1, mismo mes natural */
-    const j25=d.find(r=>r.mes==="2025-06"), j26=d.find(r=>r.mes==="2026-06");
-    const dia=(r,k)=>r[k]/r.dias;
-
+    const j25=d.find(r=>r.mes==="2025-06"), j26=d.find(r=>r.mes==="2026-06"), dia=(r,k)=>r[k]/r.dias;
+    const DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+    function hh(x){const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")}
     function periodoHora(dw,h){ if(dw>=5)return 3; if(h<8)return 3; if((h>=10&&h<14)||(h>=18&&h<22))return 1; return 2; }
 
-    function pintar(){
-      const ef=P.ef/100, kwhPh=P.phev_bat/ef;
-      const bat=(km,c,b)=>Math.min(km*c/100,b)/ef;
-      const kwhPhDia=bat(P.phev_kmd,P.phev_cons,P.phev_bat), kwhPhFd=bat(P.phev_kmf/2,P.phev_cons,P.phev_bat), kwhPhSem=5*kwhPhDia+2*kwhPhFd;
-      const phevGasol=P.phev_kmd*P.phev_cons/100>P.phev_bat;
-      const kwhBeDia=bat(P.bev_kmd,P.bev_cons,P.bev_bat), kwhBeFd=bat(P.bev_kmf/2,P.bev_cons,P.bev_bat), kwhBeSem=5*kwhBeDia+2*kwhBeFd;
-      const hPh=kwhPhDia/P.phev_kw;
-      /* reparto Tesla: L-V cada noche lo de ese día; fin de semana lo de 2 días, de día */
-      const hBeNoche=kwhBeDia/P.bev_kw;
-      const potP2=pot.P2.kw, libre=potP2-P.base_kw;
-      const cabeEscalonado=hPh+hBeNoche<=8;
-      const picoSimult=P.base_kw+P.phev_kw+P.bev_kw;
-      const picoEsc=P.base_kw+Math.max(P.phev_kw,P.bev_kw);
-      const necesitaPot=Math.max(0,(cabeEscalonado?picoEsc:picoSimult)-potP2);
-      const mes=52/12, kwhMes=(kwhPhSem+kwhBeSem)*mes;
-      const cP3=kwhMes*pr.P3, cP1=kwhMes*pr.P1, cExc=kwhMes*exc;
+    /* sesiones semanales: [día (0=lun), inicio h, fin h, coche] */
+    function sesiones(){
+      const f=P.fin;
+      return [[0,0,f,"T"],[1,0,f,"X"],[2,0,f,"T"],[3,0,f,"X"],[4,0,f,"T"],
+              [5,0,13,"X"],[5,13,24,"T"],[6,10,22,"X"]];
+    }
+    /* simulación de 3 semanas; se informa la tercera */
+    function simular(kw){
+      const ef=P.ef/100, car={X:{bat:P.phev_bat,soc:P.phev_bat,min:1,gas:0,red:0},T:{bat:P.bev_bat,soc:P.bev_bat,min:1,gas:0,red:0}};
+      const uso={X:[...Array(5).fill(P.phev_kmd),P.phev_kmf/2,P.phev_kmf/2].map(k=>k*P.phev_cons/100),
+                 T:[...Array(5).fill(P.bev_kmd),P.bev_kmf/2,P.bev_kmf/2].map(k=>k*P.bev_cons/100)};
+      const S=sesiones(); let det=[];
+      for(let w=0;w<3;w++){
+        if(w===2){car.X.min=car.T.min=1;car.X.red=car.T.red=0;car.X.gas=car.T.gas=0;det=[]}
+        for(let dw=0;dw<7;dw++){
+          const ses=S.filter(s=>s[0]===dw), noct=ses.filter(s=>s[1]===0), diur=ses.filter(s=>s[1]>0);
+          const carga=s=>{const c=car[s[3]],h=s[2]-s[1],need=c.bat-c.soc,got=Math.min(need,h*kw*ef);c.soc+=got;c.red+=got/ef;det.push({s,kwh:got/ef,h:got/ef/kw,lleno:c.soc>=c.bat-0.01})};
+          noct.forEach(carga);
+          for(const k of ["X","T"]){const c=car[k];c.soc-=uso[k][dw];if(c.soc<0){c.gas+=-c.soc;c.soc=0}c.min=Math.min(c.min,c.soc/c.bat)}
+          diur.forEach(carga);
+        }
+      }
+      return {car,det};
+    }
 
+    function pintar(){
+      const ef=P.ef/100, R=simular(P.kw), X=R.car.X, Tt=R.car.T, mes=52/12;
+      const R20=simular(4.6);
+      const dX=P.phev_kmd*P.phev_cons/100, dT=P.bev_kmd*P.bev_cons/100;
+      const okX=X.gas<0.05, okT=Tt.gas<0.05&&Tt.min>=0.2, pico=P.base_kw+P.kw, okPot=pico<=pot.P2.kw;
+      const finP2=P.fin>8;
       /* veredicto */
-      const v=document.getElementById("cx-veredicto");
-      const okPot=necesitaPot<=0.05;
-      v.className="veredicto"+(cabeEscalonado&&okPot?"":" warn");
-      v.innerHTML=`<b>${cabeEscalonado&&okPot?"Carga todo en valle y escalona los dos coches: cabe en tus 8 h de P3 sin subir potencia.":(!cabeEscalonado?"Con estos km, BMW + Tesla no caben escalonados en las 8 h de valle entre semana.":"La carga escalonada supera la potencia contratada en valle.")}</b>
-        <span class="det">Coches: ${fmt(kwhMes)} kWh/mes de red · ${eu(cP3,0)}/mes en P3 · lo mismo en P1 costaría ${eu(cP1,0)}/mes. ${tax?"Con IEE "+fmt(FX.iee_pct,2)+" % e IVA "+FX.iva_pct+" % vigentes.":"Sin impuestos."}</span>`;
+      const v=document.getElementById("cx-veredicto"), ok=okX&&okT&&okPot&&!finP2;
+      v.className="veredicto"+(ok?"":" warn");
+      const titular=ok?`Con un enchufe basta: rota un coche por noche y todo queda en valle.`:
+        !okPot?`El cargador a ${fmt(P.kw,1)} kW con la casa (${fmt(pico,1)} kW) supera los ${fmt(pot.P2.kw,1)} kW contratados.`:
+        !okX?`El X3 no llega con la rotación: usaría gasolina unos ${fmt(X.gas*52/P.phev_cons*100/52,0)} km/semana.`:
+        !okT?`El Tesla baja del 20 % con esta rotación${R20.car.T.min>=0.2?"; con 20 A (4,6 kW) se resuelve":""}.`:
+        `La desconexión pasa de las 8:00: la última parte de la carga ya sería P2.`;
+      v.innerHTML=`<b>${titular}</b><span class="det">Coches: ${fmt((X.red+Tt.red)*mes)} kWh/mes de red · ${eu((X.red+Tt.red)*mes*pr.P3,0)}/mes con impuestos (X3 ${eu(X.red*mes*pr.P3,0)}, Tesla ${eu(Tt.red*mes*pr.P3,0)}).</span>`;
 
       /* precios */
       const filas=[["P1 punta",pr.P1,"var(--s1)"],["P2 llano",pr.P2,"var(--s2)"],["P3 valle",pr.P3,"var(--s3)"],["Excedente",exc,"var(--s4)"]], mx=pr.P1;
-      document.getElementById("cx-h-precio").textContent="Precio por periodo frente al excedente · €/kWh "+(tax?"con impuestos vigentes":"sin impuestos");
+      document.getElementById("cx-h-precio").textContent="Precio por periodo frente al excedente · €/kWh";
       document.getElementById("cx-precios").innerHTML=filas.map(([n,p,c])=>`<div class="pbar"><span>${n}</span><span class="track"><span style="width:${p/mx*100}%;background:${c}"></span></span><span class="n">${fmt(e(p),4)}</span></div>`).join("")+
-        `<div class="tbl"><table><thead><tr><th class="l">Carga completa (${tax?"con imp.":"sin imp."})</th><th>kWh red</th><th>P1</th><th>P2</th><th>P3</th><th>Solar*</th></tr></thead><tbody>
-          <tr><td>BMW 0 → 100 %</td><td>${fmt(kwhPh,1)}</td><td>${eu(kwhPh*pr.P1)}</td><td>${eu(kwhPh*pr.P2)}</td><td><b>${eu(kwhPh*pr.P3)}</b></td><td>${eu(kwhPh*exc)}</td></tr>
-          <tr><td>Tesla · 100 km</td><td>${fmt(P.bev_cons/ef,1)}</td><td>${eu(P.bev_cons/ef*pr.P1)}</td><td>${eu(P.bev_cons/ef*pr.P2)}</td><td><b>${eu(P.bev_cons/ef*pr.P3)}</b></td><td>${eu(P.bev_cons/ef*exc)}</td></tr></tbody></table></div>`;
-      document.getElementById("cx-precio-nota").innerHTML=`*Solar = coste de oportunidad: lo que dejas de compensar (${fmt(e(exc),4)} €/kWh). Cargar con sol en vez de en valle ahorra solo <b>${fmt(e(pr.P3-exc),4)} €/kWh</b> (${eu(kwhPh*(pr.P3-exc))} por carga del BMW). La compensación nunca ha tocado el tope (máx. ${fmt(Math.max(...d.map(r=>-r.compensacion_eur/r.energia_eur))*100,0)} % del término de energía), así que el excedente siempre vale ${fmt(e(exc),4)} €/kWh.`;
+        `<div class="tbl"><table><thead><tr><th class="l">Coste por 100 km</th><th>kWh red</th><th>P1</th><th>P2</th><th>P3</th><th>Solar*</th></tr></thead><tbody>
+          ${[["X3",P.phev_cons],["Tesla",P.bev_cons]].map(([n,c])=>{const k=c/ef;return `<tr><td>${n}</td><td>${fmt(k,1)}</td><td>${eu(k*pr.P1)}</td><td>${eu(k*pr.P2)}</td><td><b>${eu(k*pr.P3)}</b></td><td>${eu(k*exc)}</td></tr>`}).join("")}</tbody></table></div>`;
+      document.getElementById("cx-precio-nota").innerHTML=`Con impuestos vigentes. *Solar = lo que dejas de compensar. Cargar con sol en vez de en valle ahorra solo ${fmt(e(pr.P3-exc),4)} €/kWh; entre semana a mediodía es P1, así que no compensa perseguir el sol.`;
 
       /* datos */
       const dP3=dia(j26,"red_P3_kWh")-dia(j25,"red_P3_kWh"), dC=dia(j26,"consumo")-dia(j25,"consumo");
+      const x3dia=(5*dX+P.phev_kmf*P.phev_cons/100)/7/ef;
       document.getElementById("cx-datos").innerHTML=`<thead><tr><th class="l">kWh/día</th><th>jun-25 (E0)</th><th>jun-26 (E1)</th><th>Diferencia</th></tr></thead><tbody>
         <tr><td>Consumo total</td><td>${fmt(dia(j25,"consumo"),1)}</td><td>${fmt(dia(j26,"consumo"),1)}</td><td><b>+${fmt(dC,1)}</b></td></tr>
-        <tr><td>Red P3 valle</td><td>${fmt(dia(j25,"red_P3_kWh"),1)}</td><td>${fmt(dia(j26,"red_P3_kWh"),1)}</td><td><b>+${fmt(dP3,1)}</b></td></tr>
-        <tr><td>Red P1 + P2</td><td>${fmt((j25.red_P1_kWh+j25.red_P2_kWh)/j25.dias,1)}</td><td>${fmt((j26.red_P1_kWh+j26.red_P2_kWh)/j26.dias,1)}</td><td>+${fmt((j26.red_P1_kWh+j26.red_P2_kWh)/j26.dias-(j25.red_P1_kWh+j25.red_P2_kWh)/j25.dias,1)}</td></tr></tbody>`;
-      document.getElementById("cx-datos-nota").innerHTML=`Sin datos reales de carga. El BMW carga siempre en valle, así que el aumento de P3 (+${fmt(dP3,1)} kWh/día) es la mejor aproximación. Tus km (${P.phev_kmd} km/día L-V) explican unos ${fmt(kwhPhSem/7,1)} kWh/día; el resto puede ser más refrigeración en jun-26 u otros usos. Estimación débil: E0 es un solo mes.`;
+        <tr><td>Red P3 valle</td><td>${fmt(dia(j25,"red_P3_kWh"),1)}</td><td>${fmt(dia(j26,"red_P3_kWh"),1)}</td><td><b>+${fmt(dP3,1)}</b></td></tr></tbody>`;
+      document.getElementById("cx-datos-nota").innerHTML=`El X3 carga siempre en valle: el aumento de P3 (+${fmt(dP3,1)} kWh/día) es la mejor aproximación. Con ${P.phev_kmd} km/día y ${fmt(P.phev_cons,0)} kWh/100 km el X3 explica ~${fmt(x3dia,1)} kWh/día, coherente con el dato. Estimación débil: E0 es un solo mes.`;
 
-      /* resultados simulador */
+      /* resultados */
       const sem=(c,t)=>`<span class="sem ${c}">${t}</span>`;
+      const noches=R.det.filter(x=>x.s[0]<5&&x.s[1]===0), maxN=Math.max(...noches.map(x=>x.h));
       document.getElementById("cx-res").innerHTML=[
-        `<div class="kpi"><div class="lbl"><span>BMW</span></div><div class="val">${hh(hPh)}<small>h por noche</small></div><div class="det">${P.phev_kmd} km/día → ${fmt(kwhPhDia,1)} kWh de red a ${fmt(P.phev_kw,1)} kW · ${fmt(kwhPhSem*mes)} kWh/mes · ${eu(kwhPhSem*mes*pr.P3,0)}/mes en P3${phevGasol?' · supera la autonomía eléctrica: el resto lo hace con gasolina':''}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Tesla</span></div><div class="val">${hh(hBeNoche)}<small>h por noche</small></div><div class="det">${P.bev_kmd} km/día → ${fmt(kwhBeDia,1)} kWh de red a ${fmt(P.bev_kw,1)} kW · ${fmt(kwhBeSem*mes)} kWh/mes · ${eu(kwhBeSem*mes*pr.P3,0)}/mes en P3</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>X3</span></div><div class="val">${fmt(dX,1)}<small>kWh/día L-V</small></div><div class="det">Autonomía eléctrica ~${fmt(P.phev_bat/P.phev_cons*100,0)} km · mínimo ${fmt(X.min*100,0)} % · ${okX?sem("ok","sin gasolina"):sem("ko","usa gasolina")}</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Tesla</span></div><div class="val">${fmt(dT,1)}<small>kWh/día L-V</small></div><div class="det">Autonomía ~${fmt(P.bev_bat/P.bev_cons*100,0)} km · mínimo ${fmt(Tt.min*100,0)} % · ${okT?sem("ok","con margen"):sem("ko","margen bajo")}</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Noche más larga</span></div><div class="val">${hh(maxN)}<small>h de ${hh(P.fin)}</small></div><div class="det">A ${fmt(P.kw,1)} kW caben ${fmt(P.fin*P.kw,0)} kWh de red por noche${R20.car.T.min>Tt.min+0.02&&P.kw<4.6?` · con 20 A (4,6 kW) el Tesla no bajaría del ${fmt(R20.car.T.min*100,0)} %`:""}</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Potencia de noche</span><span class="tag">contratado ${fmt(pot.P2.kw,1)} kW</span></div><div class="val">${fmt(pico,1)}<small>kW de pico</small></div><div class="det">Casa ${fmt(P.base_kw,1)} + un coche ${fmt(P.kw,1)} kW · ${okPot?sem("ok","dentro"):sem("ko","supera la potencia")}</div></div>`,
         `<div class="kpi"><div class="lbl"><span>Carga completa 0 → 100 %</span></div><div class="pair">
-           <div><div class="val">${hh(kwhPh/P.phev_kw)}<small>h</small></div><div class="det">BMW · ${fmt(P.phev_bat,1)} kWh a ${fmt(P.phev_kw,1)} kW</div></div>
-           <div><div class="val">${hh(P.bev_bat/ef/P.bev_kw)}<small>h</small></div><div class="det">Tesla · ${fmt(P.bev_bat,1)} kWh a ${fmt(P.bev_kw,1)} kW</div></div></div>
-           <div class="det">${P.bev_bat/ef/P.bev_kw>8?`Un Tesla vacío no se llena en una noche de valle (8 h): hacen falta ${fmt(P.bev_bat/ef/P.bev_kw,1)} h. Repón cada noche lo del día o usa el fin de semana, que es todo P3.`:"Un Tesla vacío se llena en una noche de valle."} Con 7,4 kW: BMW ${hh(kwhPh/7.4)} h, Tesla ${hh(P.bev_bat/ef/7.4)} h.</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Ventana de valle L-V</span></div><div class="val">${fmt(hPh+hBeNoche,1)}<small>h de 8 h</small></div><div class="det">${cabeEscalonado?sem("ok","Cabe escalonado"):sem("ko","No cabe escalonado")} · BMW 0:00 → ${hh(hPh)}, Tesla ${hh(hPh)} → ${hh(Math.min(8,hPh+hBeNoche))}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Potencia en valle</span><span class="tag">P2 · ${fmt(potP2,1)} kW</span></div><div class="val">${fmt(cabeEscalonado?picoEsc:picoSimult,1)}<small>kW de pico</small></div><div class="det">${okPot?sem("ok","Dentro de la potencia"):sem("ko","Supera en "+fmt(necesitaPot,1)+" kW")} · los dos a la vez serían ${fmt(picoSimult,1)} kW${necesitaPot>0.05?` · subir P2 ${fmt(Math.ceil(necesitaPot*10)/10,1)} kW cuesta ${eu(Math.ceil(necesitaPot*10)/10*pot.P2.eur_kw_dia*365,0)}/año`:""}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Coste de cargar en P1</span></div><div class="val">${eu((cP1-cP3)*12,0)}<small>/año extra</small></div><div class="det">Frente a cargar todo en valle. Cargar con sol en vez de valle ahorraría ${eu((cP3-cExc)*12,0)}/año como máximo.</div></div>`
+           <div><div class="val">${hh(P.phev_bat/ef/P.kw)}<small>h</small></div><div class="det">X3</div></div>
+           <div><div class="val">${hh(P.bev_bat/ef/P.kw)}<small>h</small></div><div class="det">Tesla</div></div></div><div class="det">Referencia: con la rotación no hace falta.</div></div>`
       ].join("");
 
-      /* plan semanal */
-      const dias=["L","M","X","J","V","S","D"], g=document.getElementById("cx-semana");
+      /* tabla de rotación */
+      const nom={X:"X3",T:"Tesla"}, nombreSes=s=>s[1]===0&&s[0]<5?`Noche ${DIAS[(s[0]+6)%7]} → ${DIAS[s[0]]}`:s[1]===0?`Noche Vie → Sáb`:`${DIAS[s[0]]} desde las ${s[1]}:00`;
+      document.getElementById("cx-rot").innerHTML=`<thead><tr><th class="l">Sesión</th><th class="l">Coche</th><th>Carga (kWh de red)</th><th>Horas</th><th class="l">Termina</th></tr></thead><tbody>`+
+        R.det.map(x=>`<tr><td class="l">${nombreSes(x.s)}</td><td class="l"><b class="pill ${x.s[3]==="X"?"b":"t"}">${nom[x.s[3]]}</b></td><td>${fmt(x.kwh,1)}</td><td>${hh(x.h)}</td><td class="l">${x.kwh<0.05?"ya lleno":hh(x.s[1]+x.h)+(x.lleno?" · 100 %":" · sin llenar")}</td></tr>`).join("")+"</tbody>";
+
+      /* cuadrícula semanal */
+      const g=document.getElementById("cx-semana");
       let html='<span></span>'+Array.from({length:24},(_,h)=>`<span class="h">${h}</span>`).join("");
-      const kwhBeFinde=kwhBeFd, hPhFd=kwhPhFd/P.phev_kw;
       for(let dw=0;dw<7;dw++){
-        html+=`<span class="d">${dias[dw]}</span>`;
+        html+=`<span class="d">${["L","M","X","J","V","S","D"][dw]}</span>`;
         for(let h=0;h<24;h++){
           const p=periodoHora(dw,h), col=p===1?"var(--s1)":p===2?"var(--s2)":"var(--s3)";
-          let b=false,tt=false;
-          if(dw<5){ b=hPh>0&&h<Math.ceil(hPh); tt=h>=Math.floor(hPh)&&h<Math.ceil(hPh+hBeNoche)&&hBeNoche>0; }
-          else{ const ini=11; tt=h>=ini&&h<ini+Math.ceil(kwhBeFinde/P.bev_kw); b=hPhFd>0&&h>=ini+Math.ceil(kwhBeFinde/P.bev_kw)&&h<ini+Math.ceil(kwhBeFinde/P.bev_kw)+Math.ceil(hPhFd); }
-          html+=`<span class="c" style="background:${col}" title="${dias[dw]} ${h}:00 · P${p}">${b?'<b class="pill b">X3</b>':""}${tt?'<b class="pill t">M3</b>':""}</span>`;
+          const x=R.det.find(z=>z.s[0]===dw&&h>=z.s[1]&&h<z.s[1]+Math.ceil(z.h)&&z.kwh>0.05);
+          html+=`<span class="c" style="background:${col}" title="${DIAS[dw]} ${h}:00 · P${p}">${x?`<b class="pill ${x.s[3]==="X"?"b":"t"}">${x.s[3]==="X"?"X3":"M3"}</b>`:""}</span>`;
         }
       }
       g.innerHTML=html;
 
       /* consejos */
       document.getElementById("cx-consejos").innerHTML=[
-        `<b>Sigue cargando solo en valle, como hasta ahora.</b> P3 cuesta ${fmt(e(pr.P3),4)} €/kWh; P1 cuesta ${fmt(pr.P1/pr.P3,1)} veces más. Es la decisión que más dinero mueve.`,
-        `<b>No persigas el sol entre semana.</b> De 10 a 14 h L-V es P1: si el coche tira más de lo que producen las placas, lo que falta lo pagas a ${fmt(e(pr.P1),4)} €/kWh. Con sol pleno el ahorro frente a valle es solo ${fmt(e(pr.P3-exc),4)} €/kWh.`,
-        `<b>Fines de semana y festivos nacionales, carga de día.</b> Todo es P3, así que la parte que cubran las placas es un pequeño extra sin riesgo. Es el mejor momento para la carga completa semanal del Tesla.`,
-        `<b>Escalona los dos coches.</b> BMW primero, a las 0:00, y Tesla programado para empezar a las ${hh(hPh)}. Con ${fmt(P.phev_kw,1)} + ${fmt(P.bev_kw,1)} kW a la vez superarías tus ${fmt(potP2,1)} kW y saltaría el limitador del contador.`,
-        `<b>Tesla (LFP): límite de carga al 100 % y carga programada.</b> El coste se controla con la hora de inicio, no con el %. Si una noche no cabe, baja los amperios en la app en vez de solapar con el BMW.`,
-        `<b>BMW: hora de inicio fija a las 0:00 en My BMW.</b> Con ${P.phev_kmd} km/día repone ${fmt(kwhPhDia,1)} kWh y termina hacia las ${hh(hPh)}. Las horas de carga dependen de los km recorridos, no del tamaño de la batería.`,
-        `<b>En invierno, cuenta con la aerotermia.</b> Si de noche el suelo radiante tira 2-3 kW, revisa el margen en el simulador con esa carga de casa. Si el pico se acerca a ${fmt(potP2,1)} kW, es más barato bajar amperios que subir potencia.`,
-        `<b>Subir potencia solo en valle es barato pero no hace falta hoy.</b> Cada kW extra en P2 cuesta ${eu(pot.P2.eur_kw_dia*365,1)}/año, frente a ${eu(pot.P1.eur_kw_dia*365,1)}/año en P1. Tiene sentido solo si quieres cargar los dos a la vez; la subida tiene además un coste de tramitación que no está incluido aquí.`,
-        `<b>Preacondiciona conectado y antes de las 8:00.</b> La energía sale de la red en P3 y no de la batería. Después de las 8:00 L-V ya es P2.`,
-        `<b>Para pasar de estimaciones a datos reales:</b> apunta cada mes los kWh cargados que muestran My BMW y la app de Tesla. Así se podrá separar coches, climatización y consumo base sin suposiciones.`
+        `<b>Un coche por noche, alternando.</b> Tesla las noches de dom→lun, mar→mié y jue→vie; X3 las de lun→mar y mié→jue. El X3 aguanta 2 días (${fmt(2*dX,1)} de ${fmt(P.phev_bat,0)} kWh) y el Tesla tiene batería de sobra para 2 días.`,
+        `<b>Cambia el cable por la tarde, al llegar a casa.</b> Así lo conectado a las 0:00 carga sin que nadie se levante. Programa el inicio a las 0:00 en ambos coches (My BMW y app de Tesla).`,
+        `<b>Fin de semana: X3 el sábado por la mañana y el Tesla desde el mediodía, hasta el 100 %.</b> Todo el fin de semana es P3 y la parte que cubra el sol es extra. El Tesla LFP debe llegar al 100 % al menos una vez por semana.`,
+        `<b>Domingo de día, el X3; domingo por la noche, el Tesla.</b> Así el lunes salen los dos con batería.`,
+        `<b>Tesla con límite de carga al 100 %.</b> El coste se controla con la hora de inicio, no con el %.`,
+        P.kw<4.6?`<b>Si el cargador lo permite, ponlo a 20 A (4,6 kW).</b> Ganas ~${fmt(P.fin*(4.6-P.kw),0)} kWh por noche y el pico (${fmt(P.base_kw+4.6,1)} kW) sigue por debajo de ${fmt(pot.P2.kw,1)} kW. A 32 A (7,4 kW) superarías la potencia con la casa encendida.`:`<b>No subas a 32 A sin subir potencia.</b> Con la casa encendida pasarías de ${fmt(pot.P2.kw,1)} kW.`,
+        `<b>No hace falta subir potencia.</b> Con un solo enchufe nunca cargan los dos a la vez.`,
+        `<b>Preacondiciona antes de las 7:30, aún conectado.</b> La energía sale de la red en P3 y no de la batería.`,
+        `<b>En invierno cuenta un 15-25 % más de consumo</b> en ambos coches. Si el Tesla va justo, añádele la noche del lunes o sube a 20 A.`,
+        `<b>No persigas el sol entre semana.</b> De 10 a 14 h L-V es P1: lo que no cubran las placas cuesta ${fmt(e(pr.P1),4)} €/kWh.`
       ].map(x=>`<li>${x}</li>`).join("");
 
       document.getElementById("cx-notas").innerHTML=[
-        `Supuestos: BMW X3 30e con ~20 kWh útiles (19,7 netos de 22,4 brutos según ficha) y unos ${PH.km} km eléctricos (consumo ~23 kWh/100 km); cada noche se repone lo gastado en el día. Tesla Model 3 Standard desde nov-2026: LFP con 60 kWh útiles (64 brutos), consumo homologado 13,0 kWh/100 km y real medio ~13,5; uso 14 por defecto (en invierno sube). Ambos aceptan hasta 11 kW AC, pero en casa los limita el cargador y la potencia contratada; por eso el valor por defecto es 3,7 kW (16 A), que encaja con haber cargado el BMW en valle sin cortes con 7,6 kW contratados. Pendiente de confirmar con tu cargador.`,
-        `Precios de energía y potencia de la tarifa vigente (${T.comercializadora} ${T.producto}). ${tax?"Con impuestos vigentes: IEE "+fmt(FX.iee_pct,2)+" % e IVA "+FX.iva_pct+" %.":"Sin impuestos."} Mes = 52/12 semanas.`,
-        `Plan de fin de semana: el Tesla carga desde las 11:00 lo de dos días y después el BMW, para aprovechar el sol. Entre semana, cada noche el Tesla repone lo del día.`
+        `Supuestos: X3 con ${fmt(P.phev_bat,0)} kWh útiles y ${fmt(P.phev_cons,0)} kWh/100 km; Tesla Model 3 Standard (LFP, desde nov-2026) con ${fmt(P.bev_bat,0)} kWh útiles y ${fmt(P.bev_cons,0)} kWh/100 km. Simulación de 3 semanas con la rotación fija; se muestra la tercera. Fin de semana: km repartidos a partes iguales entre sábado y domingo.`,
+        `Potencia del cargador desconocida: por defecto 3,7 kW (16 A), lo más prudente con ${fmt(pot.P2.kw,1)} kW contratados. Precios de la tarifa vigente con IEE ${fmt(FX.iee_pct,2)} % e IVA ${FX.iva_pct} %.`
       ].map(p=>`<p>${p}</p>`).join("");
     }
-    function hh(x){const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")}
     pintar();
   })();
 
