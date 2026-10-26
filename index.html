@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CASA-01 Energía</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: cabecera compacta → fila de KPIs → gráficos apilados a ancho completo, máx. 1120px */
+:root{
+  --bg:#f6f6f3; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --line:rgba(11,11,11,.10); --accent:#1c5cab; --accent-soft:#e6eefa;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --warn:#9a6400; --warn-bg:#fdf3dc; --good:#0a7d0a; --bad:#c03030; --solar:#eda100; --vert:#2a78d6; --grid-in:#9a9aa3;
+  --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f0f0e; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --line:rgba(255,255,255,.10); --accent:#86b6ef; --accent-soft:#1c2a3d;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --warn:#f0c060; --warn-bg:#2e2410; --good:#3fbf3f; --bad:#e66767; --solar:#c98500; --vert:#3987e5; --grid-in:#6b6b73; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f0f0e; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --line:rgba(255,255,255,.10); --accent:#86b6ef; --accent-soft:#1c2a3d;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --warn:#f0c060; --warn-bg:#2e2410; --good:#3fbf3f; --bad:#e66767; --solar:#c98500; --vert:#3987e5; --grid-in:#6b6b73; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:36px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:26px;line-height:1.2;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:18px;margin:0;font-weight:700}
+.meta{color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 14px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink);font-size:12.5px;font-weight:500}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+section{display:flex;flex-direction:column;gap:14px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+.sub{color:var(--ink-2);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .lbl{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:8px}
+.tag{font-size:10.5px;letter-spacing:.04em;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);text-transform:none;font-weight:500;white-space:nowrap}
+.tag.con{border-color:var(--warn);color:var(--warn)}
+.kpi .val{font-size:26px;font-weight:700;line-height:1.15}
+.kpi .val small{font-size:13px;font-weight:500;color:var(--ink-2);margin-left:4px}
+.kpi .det{color:var(--ink-2);font-size:12.5px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.split{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin-top:6px}
+.split span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line)}
+.flbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.wrapseg{flex-wrap:wrap}
+.splitrow{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink-2);margin-top:4px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px}
+.panel-head h3{margin:0;font-size:14.5px;font-weight:600}
+.chart{position:relative;height:300px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink-2);padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);font-weight:600}
+.seg button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:13px}
+.tbl{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--grid);text-align:right;white-space:nowrap}
+th{color:var(--ink-2);font-weight:600;position:sticky;top:0;background:var(--surface)}
+th:first-child,td:first-child,td.l,th.l{text-align:left}
+td .flag{display:inline-block;margin-left:6px;font-size:10.5px;padding:0 6px;border-radius:999px;background:var(--warn-bg);color:var(--warn)}
+.notes{color:var(--ink-2);font-size:12.5px;max-width:78ch;display:flex;flex-direction:column;gap:4px}
+.notes p{margin:0}
+footer{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.veredicto{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--good);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.veredicto.warn{border-left-color:var(--warn)}
+.veredicto b{font-size:15px}
+.det{color:var(--ink-2);font-size:12.5px;margin:0}
+.pbar{display:grid;grid-template-columns:96px 1fr 76px;align-items:center;gap:10px;font-size:13px;padding:3px 0}
+.pbar .track{height:14px;background:var(--bg);border-radius:4px;overflow:hidden}
+.pbar .track span{display:block;height:100%;border-radius:4px}
+.pbar .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 16px}
+.inputs label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--ink-2)}
+.inputs .row{display:flex;align-items:center;gap:8px}
+.inputs input{font:inherit;font-size:14px;width:100%;min-width:0;padding:6px 8px;border:1px solid var(--axis);border-radius:6px;background:var(--bg);color:var(--ink)}
+.inputs input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.inputs small{color:var(--muted)}
+.semana{display:grid;grid-template-columns:34px repeat(24,minmax(22px,1fr));gap:2px;min-width:620px;font-size:10.5px}
+.semana .h{color:var(--muted);text-align:center}
+.semana .d{color:var(--ink-2);font-weight:600;align-self:center}
+.semana .c{height:34px;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;opacity:.9}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;line-height:1;padding:2px 3px;border-radius:3px;background:var(--surface);color:var(--ink)}
+.pill.t{background:var(--ink);color:var(--surface)}
+.consejos{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:86ch}
+.consejos li::marker{color:var(--accent);font-weight:700}
+.consejos b{font-weight:600}
+.sem{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.sem::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.ok{color:var(--good)} .ko{color:var(--bad)} .wa{color:var(--warn)}
+.custom{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+.custom select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--axis);border-radius:6px;background:var(--surface);color:var(--ink)}
+.custom select:focus-visible{outline:2px solid var(--accent)}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.hero h3{margin:0;font-size:14.5px;font-weight:600}
+.donut{position:relative;height:210px}
+.donut .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center}
+.donut .center b{font-size:34px;line-height:1;font-weight:700}
+.donut .center span{font-size:12px;color:var(--ink-2);margin-top:4px;max-width:120px}
+.dleg{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.dleg div{display:grid;grid-template-columns:14px 1fr auto auto;gap:8px;align-items:center}
+.dleg i{width:10px;height:10px;border-radius:3px}
+.dleg .n{font-variant-numeric:tabular-nums;color:var(--ink-2);text-align:right}
+.dleg .p{font-variant-numeric:tabular-nums;font-weight:600;min-width:52px;text-align:right}
+.costs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cbox{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.cbox .tag{align-self:flex-start}
+.cbox .m{display:flex;flex-direction:column}
+.cbox .m b{font-size:22px;line-height:1.15}
+.cbox .m b small{font-size:12px;font-weight:500;color:var(--ink-2);margin-left:3px}
+.cbox .m span{font-size:12px;color:var(--ink-2)}
+.kpis.mini .kpi .val{font-size:20px}
+header{position:relative}
+.theme{position:absolute;top:0;right:0;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.theme:hover{border-color:var(--axis)}
+.theme:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.theme .i-sun{display:none}
+.dark-on .theme .i-sun{display:block}.dark-on .theme .i-moon{display:none}
+header h1,header .eyebrow{padding-right:48px}
+.hero{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important}
+.cost-panel{gap:12px}
+.cbig{display:flex;flex-direction:column;gap:10px}
+.cm{display:flex;flex-direction:column;border-bottom:1px solid var(--grid);padding-bottom:8px}
+.cm:last-child{border-bottom:0;padding-bottom:0}
+.cm .k{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.cm b{font-size:30px;line-height:1.1;font-weight:700}
+.cm b small{font-size:14px;font-weight:500;color:var(--ink-2);margin-left:4px}
+.tramos{display:flex;flex-direction:column;gap:6px}
+.tr{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;font-size:13px;color:var(--ink-2)}
+.tr i{width:10px;height:10px;border-radius:3px}
+.tr b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
+.tr b small{font-size:11px;font-weight:500;color:var(--ink-2);margin-left:3px}
+@media (max-width:720px){.tr{font-size:11.5px;gap:5px}.tr b{font-size:14px}.tr b small{display:none}}
+.sub-cm .k::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--s3);margin-right:6px;vertical-align:0}
+.cm-n{font-size:11px;color:var(--muted)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:54px;margin-top:2px}
+.spark span{flex:1;min-width:3px;background:var(--s2);border-radius:3px 3px 0 0;opacity:.55}
+.spark span.max{opacity:1}
+.spark-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);gap:6px}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+section{scroll-margin-top:130px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.secnav{display:flex;gap:4px;flex-basis:100%;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:2px}
+.secnav a{color:var(--ink-2);text-decoration:none;font-weight:600;font-size:13.5px;padding:6px 12px;border-radius:999px}
+.secnav a:hover{background:var(--surface)}
+.secnav a[aria-current="true"]{background:var(--accent-soft);color:var(--ink)}
+.secnav a:focus-visible,.tabbar a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabbar{display:none}
+.hero{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))!important}
+.grid2{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr))}
+.inputs{grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr))}
+@media (max-width:720px){
+  .secnav{display:none}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+    padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom,0px));padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px;justify-content:center;color:var(--muted);text-decoration:none;font-size:10.5px;font-weight:600;border-radius:8px}
+  .tabbar a[aria-current="true"]{color:var(--accent)}
+  .tabbar a[aria-current="true"] svg{transform:translateY(-1px)}
+  .wrap{padding-block:18px calc(88px + env(safe-area-inset-bottom,0px));gap:28px}
+  section{scroll-margin-top:96px}
+  .filtros{gap:6px}
+  .filtros .wrapseg{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .filtros .wrapseg::-webkit-scrollbar{display:none}
+  .seg button{min-height:36px;white-space:nowrap;padding:6px 12px}
+  #f-desc{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .custom{width:100%}
+  .custom select{flex:1;min-width:0}
+  .sec-head{align-items:center}
+  .donut{height:180px}
+  .donut .center b{font-size:30px}
+  .chart{height:240px}
+  .kpis.mini{grid-template-columns:1fr 1fr}
+  .kpis.mini .kpi{padding:12px}
+  .cm b{font-size:26px}
+  .panel{padding:14px}
+  .pbar{grid-template-columns:80px 1fr 66px}
+}
+/* bloques iniciales compactos */
+.hero{grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr))!important;gap:10px}
+.hero .panel{padding:12px 14px;gap:8px}
+.hero h3{font-size:13.5px}
+.donut{height:150px}
+.donut .center b{font-size:24px}
+.donut .center span{font-size:11px;margin-top:2px}
+.dleg{font-size:12px;gap:2px}
+.hero .det{font-size:11.5px}
+.cbig{gap:6px}
+.cm{padding-bottom:6px}
+.cm .k{font-size:11px}
+.cm b{font-size:22px}
+.cm b small{font-size:12px}
+.spark{height:36px}
+@media (max-width:720px){
+  .hero{grid-template-columns:1fr 1fr!important;gap:8px}
+  .hero .panel{padding:10px}
+  .donut{height:120px}
+  .donut .center b{font-size:20px}
+  .donut .center span{font-size:10px;max-width:80px}
+  .dleg div{grid-template-columns:10px 1fr auto;gap:6px}
+  .dleg .n{display:none}
+  .hero .det{display:none}
+  .cm b{font-size:18px}
+  .cm b small{font-size:11px}
+  .spark{height:28px}
+  .spark-l span:nth-child(2){display:none}
+}
+/* donut + leyenda en fila */
+.drow{display:flex;align-items:center;gap:14px}
+.drow .donut{flex:0 0 140px;height:140px}
+.drow .dleg{flex:1;min-width:0;gap:6px}
+.drow .dleg div{grid-template-columns:10px 1fr;gap:8px}
+@media (max-width:720px){
+  .drow{gap:8px}
+  .drow .donut{flex-basis:84px;height:84px}
+  .drow .donut .center b{font-size:16px}
+  .drow .donut .center span{display:none}
+  .drow .dleg{font-size:11px;gap:4px}
+  .drow .dleg div{grid-template-columns:8px 1fr;gap:5px}
+  .drow .dleg i{width:8px;height:8px}
+}
+/* fixes v0.6 */
+.drow .donut{width:140px;min-width:0;overflow:hidden}
+.drow .donut canvas{max-width:100%}
+.drow .dleg{flex:1 1 auto}
+.kpi .lbl{align-items:flex-start;flex-wrap:wrap;row-gap:4px}
+.kpi .lbl .tag{flex:0 0 auto}
+.kpis.mini{grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr))}
+@media (max-width:720px){.drow .donut{width:84px}}
+/* fixes v0.6b */
+.drow .donut{width:124px;flex-basis:124px;height:124px}
+.drow .dleg{white-space:nowrap}
+section,.hero,.kpis{min-width:0}
+@media (max-width:720px){
+  .kpis.mini{grid-template-columns:1fr 1fr}
+  .drow{flex-direction:column;align-items:stretch;gap:6px}
+  .drow .donut{width:auto;flex-basis:auto;height:104px}
+  .drow .donut .center b{font-size:18px}
+  .drow .dleg{flex-direction:row;flex-wrap:wrap;gap:2px 10px;justify-content:center;white-space:normal}
+  .drow .dleg div{display:flex;align-items:center;gap:4px}
+}
+/* móvil compacto v0.7 */
+h3 .sm{display:none}
+.custom[hidden]{display:none!important}
+@media (max-width:720px){
+  h3 .lg{display:none} h3 .sm{display:inline}
+  #res-sub{display:none}
+  .hero{grid-template-columns:1fr!important;gap:8px}
+  .hero .panel{padding:10px 12px;gap:6px}
+  .hero h3{font-size:13px}
+  .drow{flex-direction:row;align-items:center;gap:16px}
+  .drow .donut{width:96px;flex:0 0 96px;height:96px}
+  .drow .donut .center b{font-size:18px}
+  .drow .dleg{flex-direction:column;flex-wrap:nowrap;align-items:flex-start;justify-content:center;gap:5px;font-size:12.5px;white-space:nowrap}
+  .drow .dleg div{display:flex;align-items:center;gap:6px}
+  .drow .dleg i{width:9px;height:9px}
+  .hero .det{display:block;font-size:11px;margin:0}
+  .cbig{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:center}
+  .cbig .cm{border:0;padding:0}
+  .cbig .cm b{font-size:22px}
+  .cm-n,.cost-panel .det{display:none!important}
+  .tramos{gap:4px}
+  .tr{font-size:12px}
+  .tr b{font-size:15px}
+  .kpis.mini{gap:8px}
+  .kpis.mini .kpi{padding:10px;gap:2px}
+  .kpis.mini .kpi .val{font-size:18px}
+  .kpis.mini .kpi .lbl{font-size:10.5px}
+  .kpis.mini .kpi .lbl .tag{font-size:9px;padding:0 5px}
+  .kpis.mini .kpi .det{font-size:11px}
+}
+.fn{margin:0;font-size:11.5px;font-weight:600;color:var(--warn)}
+@media (max-width:720px){.cost-panel .fn{display:block!important;font-size:11px}}
+/* v0.8: selector de periodo en chips + 2x2 móvil */
+.periodos{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips+.chips{padding-left:12px;border-left:1px solid var(--line)}
+.periodos button{font:inherit;font-size:13px;font-weight:500;line-height:1.2;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.periodos button:hover{border-color:var(--axis);color:var(--ink)}
+.periodos button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+.periodos button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:720px){
+  .periodos{flex-direction:column;align-items:stretch;gap:6px;width:100%}
+  .chips{flex-wrap:nowrap;gap:5px}
+  .chips+.chips{padding-left:0;border-left:0}
+  .chips button{flex:1 1 auto;padding:7px 8px;font-size:12.5px;text-align:center}
+  /* 2x2 */
+  .hero{grid-template-columns:1fr 1fr!important;gap:8px}
+  .hero .panel{padding:10px;gap:6px;min-width:0}
+  .drow{flex-direction:column;align-items:stretch;gap:6px}
+  .drow .donut{width:auto;flex:0 0 auto;height:100px}
+  .drow .donut .center b{font-size:18px}
+  .drow .dleg{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 10px;font-size:11px;white-space:nowrap}
+  .drow .dleg div{display:flex;align-items:center;gap:4px}
+  .drow .dleg i{width:8px;height:8px}
+  .hero .det{display:none}
+  .cbig{display:flex;flex-direction:column;gap:6px}
+  .cbig .cm b{font-size:20px}
+  .cbig .cm .k{font-size:10px}
+  .tramos{gap:5px}
+  .tr{font-size:11.5px;gap:5px}
+  .tr b{font-size:14px}
+  .tr b small{display:none}
+}
+/* donuts más grandes v0.8b */
+.drow{gap:10px}
+.drow .donut{width:142px;flex-basis:142px;height:142px}
+.drow .donut .center b{font-size:26px}
+@media (max-width:720px){
+  .drow .donut{width:auto;flex-basis:auto;height:132px}
+  .drow .donut .center b{font-size:22px}
+}
+@media (max-width:520px){h1{font-size:22px}.chart{height:260px}.kpi .val{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>html,body{margin:0}body{font-size:14px}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <button type="button" class="theme" id="theme" aria-label="Cambiar a modo oscuro" title="Modo claro / oscuro">
+      <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
+    </button>
+    <span class="eyebrow">CASA-01 · Panel energético · v0.8</span>
+    <h1>Consumo y coste eléctrico</h1>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <div class="filtros" id="filtros">
+    <nav class="secnav" aria-label="Secciones"><a href="#resumen" data-sec="resumen">Resumen</a><a href="#solar" data-sec="solar">Solar</a><a href="#coste-mes" data-sec="coste-mes">Coste</a><a href="#evolucion" data-sec="evolucion">Detalle</a><a href="#coches" data-sec="coches">Coches</a></nav>
+    <div class="periodos" role="group" aria-label="Periodo" id="f-periodo"></div>
+    <div class="custom" id="f-custom" hidden>
+      <label for="f-desde">Desde</label><select id="f-desde"></select>
+      <label for="f-hasta">Hasta</label><select id="f-hasta"></select>
+    </div>
+    <span class="sub" id="f-desc"></span>
+  </div>
+
+  <section id="resumen" aria-labelledby="h-res">
+    <div class="sec-head"><h2 id="h-res">Resumen</h2><span class="sub" id="res-sub"></span></div>
+    <div class="hero">
+      <div class="panel donut-panel">
+        <h3><span class="lg">Consumo de red por tramo</span><span class="sm">Red por tramo</span></h3>
+        <div class="drow">
+          <div class="donut"><canvas id="d-tramo" aria-label="Reparto del consumo de red por tramo"></canvas><div class="center" id="d-tramo-c"></div></div>
+          <div class="dleg" id="d-tramo-l"></div>
+        </div>
+      </div>
+      <div class="panel cost-panel">
+        <h3>Coste medio</h3>
+        <div class="cbig">
+          <div class="cm"><span class="k">Por kWh de red</span><b id="cm-kwh"></b></div>
+          <div class="tramos">
+            <div class="tr"><i style="background:var(--s1)"></i><span>Punta P1</span><b id="cm-p1"></b></div>
+            <div class="tr"><i style="background:var(--s2)"></i><span>Llano P2</span><b id="cm-p2"></b></div>
+            <div class="tr"><i style="background:var(--s3)"></i><span>Valle P3</span><b id="cm-p3"></b></div>
+          </div>
+        </div>
+        <p class="fn">Con impuestos (IEE + IVA). Incluye la potencia de cada tramo.</p>
+      </div>
+      <div class="panel donut-panel">
+        <h3><span class="lg">De lo que producen las placas</span><span class="sm">Producción solar</span></h3>
+        <div class="drow">
+          <div class="donut"><canvas id="d-prod" aria-label="Reparto de la producción solar"></canvas><div class="center" id="d-prod-c"></div></div>
+          <div class="dleg" id="d-prod-l"></div>
+        </div>
+        <p class="det" id="d-prod-n"></p>
+      </div>
+      <div class="panel donut-panel">
+        <h3><span class="lg">De lo que consume la casa</span><span class="sm">Origen del consumo</span></h3>
+        <div class="drow">
+          <div class="donut"><canvas id="d-cons" aria-label="Origen del consumo"></canvas><div class="center" id="d-cons-c"></div></div>
+          <div class="dleg" id="d-cons-l"></div>
+        </div>
+        <p class="det" id="d-cons-n"></p>
+      </div>
+    </div>
+    <div class="kpis mini" id="kpi-grid"></div>
+    <p class="fn">Todas las cifras con impuestos (IEE + IVA de cada factura).</p>
+  </section>
+
+  <section id="solar" aria-labelledby="h-solar">
+    <div class="sec-head"><h2 id="h-solar">Solar mes a mes</h2>
+      <div class="seg" role="group" aria-label="Unidad solar">
+        <button type="button" id="s-kwh" aria-pressed="true">kWh</button>
+        <button type="button" id="s-pct" aria-pressed="false">%</button>
+      </div></div>
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-head"><h3 id="h-prod">Producción: autoconsumida y vertida</h3></div>
+        <div class="legend"><span><i style="background:var(--solar)"></i>Autoconsumida</span><span><i style="background:var(--vert)"></i>Vertida a la red</span></div>
+        <div class="chart"><canvas id="c-prod" aria-label="Producción solar por mes"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3 id="h-cons">Consumo: solar y red</h3></div>
+        <div class="legend"><span><i style="background:var(--solar)"></i>Solar (autoconsumo)</span><span><i style="background:var(--grid-in)"></i>Red</span></div>
+        <div class="chart"><canvas id="c-cons" aria-label="Origen del consumo por mes"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="coste-mes" aria-labelledby="h-cm">
+    <div class="sec-head"><h2 id="h-cm">Coste por factura</h2><span class="sub">Cada factura cubre 29-32 días</span></div>
+    <div class="panel">
+      <div class="panel-head"><h3>Total pagado por factura · €</h3><span class="tag con">con impuestos</span></div>
+      <div class="chart"><canvas id="c-cm-con" aria-label="Total pagado por factura"></canvas></div>
+    </div>
+  </section>
+
+  <section id="evolucion" aria-labelledby="h-evo">
+    <div class="sec-head">
+      <h2 id="h-evo">Detalle diario</h2>
+      <span class="sub">Normalizado por día de factura para comparar meses</span>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3 id="h-coste">Coste sin impuestos · €/día</h3>
+        <div class="seg" role="group" aria-label="Métrica de coste">
+          <button type="button" id="m-sin" aria-pressed="true">Sin impuestos</button>
+          <button type="button" id="m-con" aria-pressed="false">Total pagado</button>
+        </div>
+      </div>
+      <div class="legend" id="lg-coste"></div>
+      <div class="chart"><canvas id="c-coste" aria-label="Coste diario por factura"></canvas></div>
+      <details>
+        <summary id="tbl-sum">Ver tabla (sin impuestos)</summary>
+        <div class="tbl"><table id="t-coste"></table></div>
+      </details>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3 id="h-kwh">Consumo por periodo · kWh/día</h3>
+        <div class="seg" role="group" aria-label="Unidad de consumo">
+          <button type="button" id="u-kwh" aria-pressed="true">kWh/día</button>
+          <button type="button" id="u-pct" aria-pressed="false">% del consumo</button>
+        </div></div>
+      <div class="legend" id="lg-kwh"></div>
+      <div class="chart"><canvas id="c-kwh" aria-label="Consumo diario por factura"></canvas></div>
+      <details>
+        <summary>Ver tabla</summary>
+        <div class="tbl"><table id="t-kwh"></table></div>
+      </details>
+    </div>
+    <div class="notes" id="notas"></div>
+  </section>
+
+  <section id="coches" aria-labelledby="h-coches">
+    <div class="sec-head">
+      <h2 id="h-coches">Carga de coches</h2>
+      <span class="tag con">con impuestos vigentes</span>
+    </div>
+    <div class="veredicto" id="cx-veredicto"></div>
+
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-head"><h3 id="cx-h-precio">Precio por periodo frente al excedente</h3></div>
+        <div id="cx-precios"></div>
+        <p class="det" id="cx-precio-nota"></p>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Qué dicen tus datos</h3><span class="chip warn">estimación débil</span></div>
+        <div class="tbl"><table id="cx-datos"></table></div>
+        <p class="det" id="cx-datos-nota"></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Simulador de carga</h3><span class="sub">Ajusta los supuestos; se guardan en este navegador</span></div>
+      <div class="inputs" id="cx-inputs"></div>
+      <div class="kpis" id="cx-res"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Plan semanal recomendado</h3>
+        <div class="legend"><span><i style="background:var(--s1)"></i>P1 punta</span><span><i style="background:var(--s2)"></i>P2 llano</span><span><i style="background:var(--s3)"></i>P3 valle</span><span><b class="pill b">X3</b> BMW</span><span><b class="pill t">M3</b> Tesla</span></div>
+      </div>
+      <div class="tbl"><div class="semana" id="cx-semana"></div></div>
+      <p class="det">Festivos nacionales: todo el día en P3, igual que sábado y domingo.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Consejos</h3></div>
+      <ol class="consejos" id="cx-consejos"></ol>
+    </div>
+    <div class="notes" id="cx-notas"></div>
+  </section>
+
+  <footer>Fuente: datos/mensual.csv y datos/tarifa-actual.md del proyecto. Solo CASA-01, fechas, kWh, kW y €. Precios unitarios sin impuestos.</footer>
+</div>
+
+<nav class="tabbar" aria-label="Secciones"><a href="#resumen" data-sec="resumen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Resumen</span></a><a href="#solar" data-sec="solar"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Solar</span></a><a href="#coste-mes" data-sec="coste-mes"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M17.5 6.5A7 7 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Coste</span></a><a href="#evolucion" data-sec="evolucion"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Detalle</span></a><a href="#coches" data-sec="coches"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 16v-4l2-5h10l2 5v4M3.5 16h17M7 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM17 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Coches</span></a></nav>
+<script id="csv-embebido" type="text/plain">mes,fecha_inicio,fecha_fin,etapa,tarifa,dias,red_P1_kWh,red_P2_kWh,red_P3_kWh,red_total_kWh,excedente_kWh,generacion_kWh,generacion_app_mes_kWh,autoconsumo_kWh,precio_P1_eur_kWh,precio_P2_eur_kWh,precio_P3_eur_kWh,precio_exc_eur_kWh,energia_eur,compensacion_eur,potencia_eur,bono_social_eur,alquiler_contador_eur,coste_sin_impuestos_eur,iee_tipo_pct,iee_eur,iva_tipo_pct,iva_eur,total_eur,notas
+2025-06,2025-05-31,2025-06-30,0,Octopus Solar,30,105,81,320,506,183,562.84,562.84,379.84,0.181524,0.106543,0.069594,0.040000,49.96,-7.32,27.82,0.38,0.80,71.64,5.112696,3.60,21,15.80,91.04,"cubre 01/06/2025-30/06/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app -0.1%; app: export 209.11, red 532.87, consumo 886.60 kWh; dias de consumo = (inicio, fin] = 1-30 jun, generacion periodo = mes natural"
+2025-07,2025-06-30,2025-07-31,1,Octopus Solar,31,117,91,378,586,212,614.09,614.09,402.09,0.181624,0.106593,0.069603,0.040000,57.26,-8.48,28.74,0.40,0.83,78.75,5.112696,3.96,21,17.36,100.07,"cubre 01/07/2025-31/07/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app +3.3%; app: export 226.25, red 588.61, consumo 956.63 kWh; app incoherente: autoconsumo 387.84 vs consumo FV 368.02"
+2025-08,2025-08-01,2025-08-31,1,Octopus Solar,31,74,63,363,500,188,521.67,521.67,333.67,0.181486,0.106508,0.069614,0.040000,45.41,-7.52,28.74,0.40,0.83,67.86,5.112696,3.41,21,14.96,86.23,"cubre 01/08/2025-31/08/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app +0.3%; app: export 211.63, red 521.54, consumo 831.58 kWh"
+2025-09,2025-09-01,2025-09-30,1,Octopus Solar,30,85,67,559,711,185,432.85,432.85,247.85,0.181647,0.106567,0.069589,0.040000,61.48,-7.40,27.82,0.38,0.80,83.08,5.112696,4.19,21,18.33,105.60,"cubre 01/09/2025-30/09/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app +0.0%; app: export 201.54, red 727.44, consumo 958.75 kWh"
+2025-10,2025-10-01,2025-10-31,1,Octopus Solar,31,70,63,561,694,136,311.96,311.96,175.96,0.181571,0.106508,0.069608,0.040000,58.47,-5.44,28.74,0.40,0.83,83.00,5.112696,4.18,21,18.30,105.48,"cubre 01/10/2025-31/10/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app -0.0%; app: export 150.06, red 708.36, consumo 870.26 kWh"
+2025-11,2025-11-01,2025-11-30,1,Octopus Solar,30,198,196,834,1228,22,187.24,187.24,165.24,0.181566,0.106633,0.069604,0.040000,114.90,-0.88,27.82,0.38,0.80,143.02,5.112696,7.25,21,31.56,181.83,"cubre 01/11/2025-30/11/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app +0.2%; app: export 39.04, red 1242.04, consumo 1390.24 kWh (red/consumo derivados del % FV, ±1 kWh)"
+2025-12,2025-12-01,2025-12-31,1,Octopus Solar,31,220,261,851,1332,1,133.21,133.21,132.21,0.181591,0.106590,0.069600,0.040000,127.00,-0.04,28.74,0.40,0.83,156.93,5.112696,7.96,21,34.62,199.51,"cubre 01/12/2025-31/12/2025; precios efectivos importe/kWh; base IEE excluye bono social; cuadre consumo factura vs app +0.1%; app: export 10.38, red 1339.43, consumo 1462.26 kWh (red/consumo derivados del % FV, ±1 kWh)"
+2026-01,2026-01-01,2026-02-01,1,Octopus Solar,31,262,280,983,1525,0,150.04,150.04,150.04,0.187824,0.108893,0.071150,0.040000,149.64,0.00,29.27,0.59,0.83,180.33,5.112696,9.15,21,39.79,229.27,"cubre 01/01/2026-31/01/2026; precios efectivos importe/kWh; base IEE excluye bono social; nuevos precios Octopus desde ene-2026; credito usado -5,48 EUR (total a pagar 223,79); linea Solar Wallet 0; cuadre consumo factura vs app +0.2%; app: export 6.33, red 1527.34, consumo 1671.05 kWh (red/consumo derivados del % FV, ±1 kWh)"
+2026-02,2026-02-01,2026-03-03,1,Octopus Solar,30,193,192,972,1357,42,266.79,241.05,224.79,0.187876,0.108906,0.071132,0.040000,126.31,-1.68,28.33,0.57,0.80,154.33,5.112696,7.82,21,34.05,196.20,"cubre 01/02/2026-02/03/2026; precios efectivos importe/kWh; base IEE excluye bono social; generacion prorrateada por dias; cuadre consumo factura vs app +1.8%; app: export 57.23, red 1278.55, consumo 1462.37 kWh (red/consumo derivados del % FV, ±1 kWh)"
+2026-03,2026-03-03,2026-04-01,1,Octopus Solar,29,129,196,736,1061,119,373.23,398.97,254.23,0.187829,0.108929,0.071155,0.040000,97.95,-4.76,27.37,0.55,0.77,121.88,0.8792,1.06,10,12.30,135.24,"cubre 03/03/2026-31/03/2026; precios efectivos importe/kWh; base IEE excluye bono social; generacion prorrateada por dias; IEE e IVA reducidos (RDL 7/2026) aplicados a todo el periodo incl. 3-21 mar (tipo del momento de exigibilidad); IEE = cuota minima 1 EUR/MWh x 1060 kWh; cuadre consumo factura vs app -1.5%; app: export 144.94, red 1173.10, consumo 1427.13 kWh (red/consumo derivados del % FV, ±1 kWh)"
+2026-04,2026-04-01,2026-04-30,1,Octopus Solar,29,82,88,572,742,225,469.68,485.88,244.68,0.187805,0.108864,0.071136,0.040000,65.67,-9.00,27.37,0.55,0.77,85.36,0.8805,0.74,10,8.61,94.71,"cubre 01/04/2026-29/04/2026; precios efectivos importe/kWh; base IEE excluye bono social; IEE = cuota minima 1 EUR/MWh x 740 kWh (red 742); cuadre consumo factura vs app +2.0%; app: export 256.04, red 771.17, consumo 1001.01 kWh"
+2026-05,2026-04-30,2026-05-31,1,Naturgy Noche Luz ECO,32,61,128,483,672,284,569.65,553.45,285.65,0.180164,0.107188,0.071801,0.060000,59.39,-17.04,39.00,0.61,0.85,82.81,5.112696,4.19,21,18.27,105.27,"cubre 30/04/2026-31/05/2026; precios efectivos importe/kWh; generacion prorrateada por dias; periodo en tramo reducido RDL 7/2026 pero facturado (jun) a tipos generales: tipo del momento de exigibilidad, coherente con Octopus mar-2026; cuadre consumo factura vs app -1.6%; app: export 300.89, red 686.89, consumo 939.45 kWh"
+2026-06,2026-06-01,2026-06-30,1,Naturgy Noche Luz ECO,30,114,159,578,851,188,596.84,596.84,408.84,0.180175,0.107170,0.071799,0.060000,79.08,-11.28,36.56,0.57,0.80,105.73,5.112696,5.36,21,23.33,134.42,"cubre 01/06/2026-30/06/2026; precios efectivos importe/kWh; deposito de garantia devuelto -49,42 EUR (total a pagar 85,00); cuadre consumo factura vs app +0.2%; app: export 219.04, red 880.13, consumo 1257.93 kWh"
+2026-07,2026-07-01,2026-07-31,1,Naturgy Noche Luz ECO,31,136,138,591,865,148,610.27,610.27,462.27,0.180221,0.107174,0.071794,0.060000,81.73,-8.88,37.79,0.77,0.83,112.24,5.112696,5.70,21,24.77,142.71,"cubre 01/07/2026-31/07/2026; precios efectivos importe/kWh; cuadre consumo factura vs app +0.2%; app: export 178.09, red 892.74, consumo 1324.92 kWh"
+2026-08,2026-08-01,2026-08-31,1,Naturgy Noche Luz ECO,31,99,79,422,600,186,542.17,542.17,356.17,0.180202,0.107215,0.071801,0.060000,56.61,-11.16,37.79,0.77,0.83,84.84,5.112696,4.30,21,18.72,107.86,"cubre 01/08/2026-31/08/2026; precios efectivos importe/kWh; cuadre consumo factura vs app +0.1%; app: export 208.62, red 622.06, consumo 955.61 kWh"
+2026-09,2026-09-01,2026-09-30,1,Naturgy Noche Luz ECO,30,104,86,555,745,160,453.80,453.80,293.80,0.180192,0.107209,0.071802,0.060000,67.81,-9.60,36.56,0.74,0.80,96.31,5.112696,4.88,21,21.25,122.44,"cubre 01/09/2026-30/09/2026; precios efectivos importe/kWh; cuadre consumo factura vs app +0.1%; app: export 179.19, red 763.44, consumo 1038.05 kWh; fechas de factura pendientes: generacion_kWh = mes natural provisional"</script>
+<script id="tarifa-embebida" type="application/json">{
+ "id": "CASA-01",
+ "actualizado": "2026-10-26",
+ "fuente": "datos/tarifa-actual.md + datos/fiscalidad.md",
+ "vigente": {
+  "comercializadora": "Naturgy",
+  "producto": "Noche Luz ECO",
+  "peaje": "2.0TD",
+  "desde": "2026-04-30",
+  "permanencia": null,
+  "energia_eur_kwh": {
+   "P1": 0.1802,
+   "P2": 0.1072,
+   "P3": 0.0718
+  },
+  "excedente_eur_kwh": 0.06,
+  "compensacion": "simplificada, tope = término de energía, sin batería virtual",
+  "potencia": {
+   "P1": {
+    "kw": 7.6,
+    "eur_kw_dia": 0.12303
+   },
+   "P2": {
+    "kw": 7.6,
+    "eur_kw_dia": 0.037337
+   }
+  },
+  "bono_social_eur_dia": 0.024688,
+  "alquiler_contador_eur_dia": 0.02663
+ },
+ "fiscalidad_vigente": {
+  "desde": "2026-06-01",
+  "iee_pct": 5.11269632,
+  "iva_pct": 21,
+  "iee_minimo_eur_mwh": 1
+ },
+ "historial": [
+  {
+   "periodo": "jun-2025 a dic-2025",
+   "desde": "2025-05-31",
+   "hasta": "2025-12-31",
+   "tarifa": "Octopus Solar",
+   "energia": {
+    "P1": 0.181524,
+    "P2": 0.106543,
+    "P3": 0.069594
+   },
+   "excedente": 0.04,
+   "potencia_eur_kw_dia": {
+    "P1": 0.095,
+    "P2": 0.027
+   }
+  },
+  {
+   "periodo": "ene-2026 a 29-abr-2026",
+   "desde": "2026-01-01",
+   "hasta": "2026-04-29",
+   "tarifa": "Octopus Solar",
+   "energia": {
+    "P1": 0.18785,
+    "P2": 0.1089,
+    "P3": 0.07114
+   },
+   "excedente": 0.04,
+   "potencia_eur_kw_dia": {
+    "P1": 0.0972,
+    "P2": 0.0271
+   }
+  }
+ ]
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+/* modo oscuro */
+(function(){const R=document.documentElement,b=document.getElementById("theme");
+  const sys=()=>matchMedia("(prefers-color-scheme: dark)").matches;
+  const efectivo=()=>R.dataset.theme?R.dataset.theme==="dark":sys();
+  const ui=()=>{const dk=efectivo();R.classList.toggle("dark-on",dk);b.setAttribute("aria-label",dk?"Cambiar a modo claro":"Cambiar a modo oscuro")};
+  try{const g=localStorage.getItem("casa01-tema");if(g==="dark"||g==="light")R.dataset.theme=g}catch(e){}
+  ui();
+  b.onclick=()=>{const nx=efectivo()?"light":"dark";R.dataset.theme=nx;try{localStorage.setItem("casa01-tema",nx)}catch(e){}ui()};
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change",ui);
+})();
+const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fmt=(n,d=0)=>n.toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d});
+const lblMes=m=>{const[y,mm]=m.split("-");return MES[+mm-1]+"-"+y.slice(2)};
+const fecha=s=>{const[y,m,d]=s.split("-");return d+"/"+m+"/"+y};
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function parseCSV(t){
+  const rows=[];let row=[],f="",q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c=='"')q=true;else if(c==","){row.push(f);f=""}
+    else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;row.push(f);f="";if(row.some(x=>x!==""))rows.push(row);row=[]}
+    else f+=c}
+  if(f!==""||row.length){row.push(f);rows.push(row)}
+  const h=rows.shift();
+  return rows.map(r=>{const o={};h.forEach((k,i)=>{const v=r[i];o[k]=(k==="mes"||k.startsWith("fecha")||k==="tarifa"||k==="notas")?v:+v});return o});
+}
+async function cargar(){
+  let csv,tar;
+  try{const r=await fetch("data/mensual.csv",{cache:"no-store"});if(!r.ok)throw 0;csv=await r.text()}catch(e){csv=document.getElementById("csv-embebido").textContent}
+  try{const r=await fetch("data/tarifa.json",{cache:"no-store"});if(!r.ok)throw 0;tar=await r.json()}catch(e){tar=JSON.parse(document.getElementById("tarifa-embebida").textContent)}
+  return{d:parseCSV(csv.trim()),t:tar};
+}
+
+cargar().then(({d,t})=>{
+  d.forEach(r=>{
+    r.consumo=r.red_total_kWh+r.autoconsumo_kWh;
+    r.otros=r.bono_social_eur+r.alquiler_contador_eur;
+    r.estimado=/prorrateada|provisional/.test(r.notas);
+    r.provisional=/provisional/.test(r.notas);
+  });
+  const ult=d[d.length-1], v=t.vigente;
+  const etapa=ult.etapa===0?"E0 · sin coches":ult.etapa===1?"E1 · PHEV":"E2 · PHEV + BEV";
+  document.getElementById("meta").innerHTML=
+    `<span>${d.length} facturas · ${lblMes(d[0].mes)} → ${lblMes(ult.mes)}</span>`+
+    `<span class="chip">Tarifa vigente: ${v.comercializadora} ${v.producto} · desde ${fecha(v.desde)}</span>`+
+    `<span class="chip">Etapa ${etapa}</span>`+
+    (d.some(r=>r.provisional)?`<span class="chip warn">${lblMes(d.filter(r=>r.provisional).pop().mes)}: generación provisional</span>`:"");
+
+  /* ---------- Filtros ---------- */
+  const EST={invierno:[12,1,2],primavera:[3,4,5],verano:[6,7,8],otono:[9,10,11]};
+  const anios=[...new Set(d.map(r=>r.mes.slice(0,4)))];
+  const OPC=[["12m","Últimos 12 meses"],...anios.map(y=>["y"+y,y]),["invierno","Invierno"],["primavera","Primavera"],["verano","Verano"],["otono","Otoño"],["custom","Personalizado"]];
+  const mesesLbl=d.map(r=>r.mes);
+  const fd=document.getElementById("f-desde"), fh=document.getElementById("f-hasta");
+  fd.innerHTML=fh.innerHTML=mesesLbl.map(m=>`<option value="${m}">${lblMes(m)}</option>`).join("");
+  let filtro="12m", desde=d[Math.max(0,d.length-12)].mes, hasta=d[d.length-1].mes;
+  try{const g=JSON.parse(localStorage.getItem("casa01-filtro2")||"null");if(g&&OPC.some(o=>o[0]===g.f)){filtro=g.f;if(g.desde)desde=g.desde;if(g.hasta)hasta=g.hasta}}catch(e){}
+  if(!mesesLbl.includes(desde))desde=mesesLbl[0]; if(!mesesLbl.includes(hasta))hasta=mesesLbl[mesesLbl.length-1];
+  fd.value=desde; fh.value=hasta;
+  function filtrar(){
+    if(filtro==="12m")return d.slice(-12);
+    if(filtro[0]==="y")return d.filter(r=>r.mes.startsWith(filtro.slice(1)));
+    if(filtro==="custom"){const a=desde<=hasta?desde:hasta,b=desde<=hasta?hasta:desde;return d.filter(r=>r.mes>=a&&r.mes<=b)}
+    return d.filter(r=>EST[filtro].includes(+r.mes.slice(5,7)));
+  }
+  let F=filtrar();
+  const fp=document.getElementById("f-periodo");
+  const chip=([k,l])=>`<button type="button" data-f="${k}" aria-pressed="${k===filtro}">${l}</button>`;
+  const EST_K=["invierno","primavera","verano","otono"];
+  fp.innerHTML=`<div class="chips">${OPC.filter(o=>!EST_K.includes(o[0])).map(o=>chip(o[0]==="12m"?["12m","12 meses"]:o)).join("")}</div><div class="chips">${OPC.filter(o=>EST_K.includes(o[0])).map(chip).join("")}</div>`;
+
+  let modo="sin", unidad="kwh", usolar="kwh", charts={};
+  const kill=k=>{charts[k]&&charts[k].destroy();delete charts[k]};
+  const SIN='<span class="tag">sin impuestos</span>', CON='<span class="tag con">con impuestos</span>';
+  const pc=(a,b)=>b?fmt(a/b*100,1):"–";
+
+  function descripcion(){
+    const dias=F.reduce((a,r)=>a+r.dias,0);
+    const parcial=filtro[0]==="y"&&F.length<12?` · año incompleto (${F.length} de 12 meses)`:"";
+    const pocos=["invierno","primavera","verano","otono"].includes(filtro)?" · estación por mes de factura":"";
+    document.getElementById("f-desc").textContent=F.length?`${F.length} factura${F.length>1?"s":""} · ${lblMes(F[0].mes)} → ${lblMes(F[F.length-1].mes)} · ${dias} días${parcial}${pocos}`:"Sin facturas en el periodo";
+    document.getElementById("f-custom").hidden=filtro!=="custom";
+  }
+
+  /* ---------- Resumen ---------- */
+  function donut(id,vals,cols,labels){
+    kill(id);
+    charts[id]=new Chart(document.getElementById(id),{type:"doughnut",
+      data:{labels,datasets:[{data:vals,backgroundColor:cols,borderColor:css("--surface"),borderWidth:3,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:"72%",animation:false,plugins:{legend:{display:false},
+        tooltip:{backgroundColor:css("--surface"),titleColor:css("--ink"),bodyColor:css("--ink-2"),borderColor:css("--axis"),borderWidth:1,
+          callbacks:{label:c=>` ${c.label}: ${fmt(c.raw)} kWh (${pc(c.raw,vals.reduce((a,b)=>a+b,0))} %)`}}}}});
+  }
+  const dleg=(rows,tot)=>rows.map(([n,v,c])=>`<div title="${fmt(v)} kWh · ${pc(v,tot)} %"><i style="background:${c}"></i><span>${n}</span></div>`).join("");
+  function resumen(){
+    const S=k=>F.reduce((a,r)=>a+r[k],0);
+    const dias=S("dias"), red=S("red_total_kWh"), au=S("autoconsumo_kWh"), exc=S("excedente_kWh"), gen=au+exc, cons=red+au;
+    const coste=S("coste_sin_impuestos_eur"), total=S("total_eur"), ene=S("energia_eur"), pot=S("potencia_eur"), comp=S("compensacion_eur");
+    const anual=filtro==="12m", est=F.filter(r=>r.estimado).length;
+    document.getElementById("res-sub").textContent=est?`${est} de ${F.length} facturas con generación prorrateada o provisional: autoconsumo estimado`:"";
+    const cSol=css("--solar"), cVer=css("--vert"), cRed=css("--grid-in");
+    donut("d-prod",[au,exc],[cSol,cVer],["Autoconsumida","Vertida a la red"]);
+    document.getElementById("d-prod-c").innerHTML=`<b>${pc(au,gen)} %</b><span>autoconsumida</span>`;
+    document.getElementById("d-prod-l").innerHTML=dleg([["Autoconsumo",au,"var(--solar)"],["Vertida",exc,"var(--vert)"]],gen);
+    const top=[...F].sort((a,b)=>b.excedente_kWh/b.dias-a.excedente_kWh/a.dias).slice(0,3).filter(r=>r.excedente_kWh>0);
+    document.getElementById("d-prod-n").innerHTML=`Producción ${fmt(gen)} kWh${anual?"":" en el periodo"}. Más vertido: ${top.map(r=>`${lblMes(r.mes)} (${pc(r.excedente_kWh,r.generacion_kWh)} %)`).join(", ")||"–"}.`;
+    donut("d-cons",[au,red],[cSol,cRed],["Solar","Red"]);
+    document.getElementById("d-cons-c").innerHTML=`<b>${pc(au,cons)} %</b><span>es solar</span>`;
+    document.getElementById("d-cons-l").innerHTML=dleg([["Solar",au,"var(--solar)"],["Red",red,"var(--grid-in)"]],cons);
+    document.getElementById("d-cons-n").textContent=`Consumo ${fmt(cons)} kWh · ${fmt(cons/dias,1)} kWh/día.`;
+    document.getElementById("cm-kwh").innerHTML=`${fmt(total/red,4)}<small>€/kWh</small>`;
+    /* por tramo: energía del tramo + su parte de potencia, con IEE e IVA de cada factura.
+       Potencia de valle → P3; potencia punta+llano → P1 y P2 en proporción a sus kWh */
+    const shareP2=r=>{const h=(t.historial||[]).find(x=>r.fecha_fin<=x.hasta&&r.fecha_fin>=x.desde);
+      const pp=h?h.potencia_eur_kw_dia:{P1:t.vigente.potencia.P1.eur_kw_dia,P2:t.vigente.potencia.P2.eur_kw_dia};return pp.P2/(pp.P1+pp.P2)};
+    const tr={P1:0,P2:0,P3:0};
+    F.forEach(r=>{const k=(1+r.iee_tipo_pct/100)*(1+r.iva_tipo_pct/100), sv=shareP2(r), pv=r.potencia_eur*sv, ppl=r.potencia_eur-pv, e12=r.red_P1_kWh+r.red_P2_kWh;
+      tr.P1+=(r.red_P1_kWh*r.precio_P1_eur_kWh+ppl*r.red_P1_kWh/e12)*k;
+      tr.P2+=(r.red_P2_kWh*r.precio_P2_eur_kWh+ppl*r.red_P2_kWh/e12)*k;
+      tr.P3+=(r.red_P3_kWh*r.precio_P3_eur_kWh+pv)*k;});
+    ["P1","P2","P3"].forEach(p=>document.getElementById("cm-"+p.toLowerCase()).innerHTML=`${fmt(tr[p]/S("red_"+p+"_kWh"),4)}<small>€/kWh</small>`);
+    const r1=S("red_P1_kWh"),r2=S("red_P2_kWh"),r3=S("red_P3_kWh");
+    donut("d-tramo",[r1,r2,r3],[css("--s1"),css("--s2"),css("--s3")],["P1 punta","P2 llano","P3 valle"]);
+    document.getElementById("d-tramo-c").innerHTML=`<b>${pc(r3,red)} %</b><span>en valle P3</span>`;
+    document.getElementById("d-tramo-l").innerHTML=dleg([["Punta P1",r1,"var(--s1)"],["Llano P2",r2,"var(--s2)"],["Valle P3",r3,"var(--s3)"]],red);
+    const KX=r=>(1+r.iee_tipo_pct/100)*(1+r.iva_tipo_pct/100), SX=k=>F.reduce((a,r)=>a+r[k]*KX(r),0);
+    const eneC=SX("energia_eur"), potC=SX("potencia_eur"), compC=SX("compensacion_eur");
+    const p1=S("red_P1_kWh")/red,p2=S("red_P2_kWh")/red,p3=S("red_P3_kWh")/red;
+    const tile=(l,tag,v,u,det,ex="")=>`<div class="kpi"><div class="lbl"><span>${l}</span>${tag}</div><div class="val">${v}<small>${u}</small></div><div class="det">${det}</div>${ex}</div>`;
+    document.getElementById("kpi-grid").innerHTML=[
+      tile("Precio solo energía","",fmt(eneC/red,4),"€/kWh","Término de energía / kWh de red"),
+      tile(anual?"Coste del año":"Coste del periodo","",fmt(total,0),"€",`${fmt(total/dias,2)} €/día · ${dias} días`),
+      tile("Peso de la potencia","",pc(potC,total),"%",`${fmt(potC,0)} € del total pagado`),
+      tile("Compensación","",fmt(-compC,0),"€",`${pc(-compC,eneC)} % del término de energía`)
+    ].join("");
+  }
+
+  /* ---------- Gráficos comunes ---------- */
+  const marcas={id:"marcas",afterDatasetsDraw(ch){
+    const{ctx,chartArea:a,scales:{x}}=ch;const cortes=[];
+    for(let i=1;i<F.length;i++){
+      if(F[i].etapa!==F[i-1].etapa)cortes.push([i,"E"+F[i].etapa+(F[i].etapa===1?" · PHEV":" · BEV")]);
+      if(F[i].tarifa!==F[i-1].tarifa)cortes.push([i,F[i].tarifa.split(" ")[0]]);
+    }
+    ctx.save();ctx.font="11px "+css("--f-ui");ctx.fillStyle=css("--ink-2");ctx.strokeStyle=css("--axis");ctx.setLineDash([4,4]);
+    cortes.forEach(([i,t])=>{const xp=(x.getPixelForValue(i-1)+x.getPixelForValue(i))/2;
+      ctx.beginPath();ctx.moveTo(xp,a.top);ctx.lineTo(xp,a.bottom);ctx.stroke();ctx.fillText("→ "+t,xp+4,a.top+10)});
+    ctx.restore();
+  }};
+  function base(yTitle){
+    const g=css("--grid"),m=css("--muted"),ink=css("--ink");
+    return{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
+      layout:{padding:{top:16}},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:css("--surface"),titleColor:ink,bodyColor:css("--ink-2"),footerColor:css("--ink-2"),borderColor:css("--axis"),borderWidth:1,padding:10,boxPadding:4,usePointStyle:true}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:m,font:{family:css("--f-ui"),size:11},maxRotation:0,autoSkip:true},border:{color:css("--axis")}},
+              y:{stacked:true,grid:{color:g},border:{display:false},ticks:{color:m,font:{family:css("--f-ui"),size:11}},title:{display:true,text:yTitle,color:m,font:{size:11}}}}};
+  }
+  const bar=(label,data,col)=>({type:"bar",label,data,backgroundColor:col,borderRadius:3,borderSkipped:false,barPercentage:.72,categoryPercentage:.9,borderColor:css("--surface"),borderWidth:{top:1}});
+  const leyenda=(id,items)=>document.getElementById(id).innerHTML=items.map(([n,c,dash])=>`<span><i style="background:${c};${dash?"height:2px;border-radius:0;vertical-align:3px":""}"></i>${n}</span>`).join("");
+  const L=()=>F.map(r=>lblMes(r.mes));
+
+  /* ---------- Solar mes a mes ---------- */
+  function solar(){
+    const pct=usolar==="pct";
+    const mk=(id,title,parts)=>{kill(id);const o=base(pct?"%":"kWh");
+      if(pct){o.scales.y.max=100;o.scales.y.ticks.callback=x=>x+" %"}
+      o.plugins.tooltip.callbacks={label:c=>{const r=F[c.dataIndex],p=parts[c.datasetIndex],tot=parts.reduce((a,q)=>a+r[q[1]],0);
+        return ` ${p[0]}: ${fmt(r[p[1]])} kWh (${pc(r[p[1]],tot)} %)`},
+        footer:it=>{const r=F[it[0].dataIndex];return`${r.dias} días`+(r.estimado?"\n⚠ generación prorrateada/provisional":"")}};
+      charts[id]=new Chart(document.getElementById(id),{data:{labels:L(),datasets:parts.map(([n,k,c])=>bar(n,F.map(r=>{const tot=parts.reduce((a,q)=>a+r[q[1]],0);return pct?r[k]/tot*100:r[k]}),css(c)))},options:o,plugins:[marcas]});
+      document.getElementById(title[0]).textContent=title[1]+(pct?" · % ":" · kWh");};
+    mk("c-prod",["h-prod","Producción: autoconsumida y vertida"],[["Autoconsumida","autoconsumo_kWh","--solar"],["Vertida a la red","excedente_kWh","--vert"]]);
+    mk("c-cons",["h-cons","Consumo: solar y red"],[["Solar","autoconsumo_kWh","--solar"],["Red","red_total_kWh","--grid-in"]]);
+  }
+
+  /* ---------- Coste por factura ---------- */
+  function costeMes(){
+    const mx=Math.max(...F.map(r=>r.total_eur))*1.08;
+    const mk=(id,k,col,lab)=>{kill(id);const o=base("€");o.scales.y.max=Math.ceil(mx/20)*20;o.scales.y.min=0;
+      o.plugins.tooltip.callbacks={label:c=>` ${lab}: ${fmt(c.raw,2)} €`,footer:it=>{const r=F[it[0].dataIndex];
+        return`${r.dias} días · ${fmt(r[k]/r.dias,2)} €/día`+(k==="total_eur"?`\nIEE ${fmt(r.iee_tipo_pct,2)} % · IVA ${r.iva_tipo_pct} %`:"")}};
+      charts[id]=new Chart(document.getElementById(id),{data:{labels:L(),datasets:[bar(lab,F.map(r=>r[k]),css(col))]},options:o,plugins:[marcas]});};
+    mk("c-cm-con","total_eur","--s2","Total pagado");
+  }
+
+  /* ---------- Detalle diario ---------- */
+  function pintarCoste(){
+    kill("c-coste");const D=F,o=base("€/día");let ds;
+    if(modo==="sin"){
+      ds=[bar("Energía",D.map(r=>r.energia_eur/r.dias),css("--s1")),bar("Potencia",D.map(r=>r.potencia_eur/r.dias),css("--s2")),
+          bar("Bono social + contador",D.map(r=>r.otros/r.dias),css("--s3")),bar("Compensación excedentes",D.map(r=>r.compensacion_eur/r.dias),css("--s4")),
+          {type:"line",label:"Coste sin impuestos",data:D.map(r=>r.coste_sin_impuestos_eur/r.dias),borderColor:css("--ink"),backgroundColor:css("--ink"),borderWidth:2,pointRadius:3,pointHoverRadius:5,stack:"neto",tension:0}];
+      leyenda("lg-coste",[["Energía",css("--s1")],["Potencia",css("--s2")],["Bono social + contador",css("--s3")],["Compensación excedentes (resta)",css("--s4")],["Coste neto",css("--ink"),1]]);
+      o.plugins.tooltip.callbacks={label:c=>{const r=D[c.dataIndex],b=r.energia_eur+r.potencia_eur+r.otros;
+          return ` ${c.dataset.label}: ${fmt(c.raw,2)} €/día`+(c.dataset.type==="line"?"":` (${fmt(Math.abs(c.raw*r.dias)/b*100,1)} % del bruto)`)},
+        footer:it=>{const r=D[it[0].dataIndex];return`${r.dias} días · ${fmt(r.coste_sin_impuestos_eur,2)} € factura (sin impuestos)`}};
+    }else{
+      ds=[bar("Total pagado",D.map(r=>r.total_eur/r.dias),css("--s2"))];
+      leyenda("lg-coste",[["Total pagado (IEE e IVA de cada factura)",css("--s2")]]);
+      o.plugins.tooltip.callbacks={label:c=>` Total pagado: ${fmt(c.raw,2)} €/día`,
+        footer:it=>{const r=D[it[0].dataIndex];return`${r.dias} días · ${fmt(r.total_eur,2)} € factura\nIEE ${fmt(r.iee_tipo_pct,2)} % · IVA ${r.iva_tipo_pct} %`}};
+    }
+    charts["c-coste"]=new Chart(document.getElementById("c-coste"),{data:{labels:L(),datasets:ds},options:o,plugins:[marcas]});
+    document.getElementById("h-coste").textContent=(modo==="sin"?"Coste sin impuestos":"Total pagado (con impuestos)")+" · €/día";
+    document.getElementById("tbl-sum").textContent="Ver tabla ("+(modo==="sin"?"sin impuestos":"con impuestos")+")";
+    const t=document.getElementById("t-coste");
+    t.innerHTML=modo==="sin"
+      ?`<thead><tr><th class="l">Mes</th><th class="l">Tarifa</th><th>Días</th><th>Energía €</th><th>Compensación €</th><th>Potencia €</th><th>Bono + contador €</th><th>Coste €</th><th>€/día</th><th>€/kWh red</th></tr></thead><tbody>`+
+        D.map(r=>`<tr><td>${lblMes(r.mes)}</td><td class="l">${r.tarifa}</td><td>${r.dias}</td><td>${fmt(r.energia_eur,2)}</td><td>${fmt(r.compensacion_eur,2)}</td><td>${fmt(r.potencia_eur,2)}</td><td>${fmt(r.otros,2)}</td><td><b>${fmt(r.coste_sin_impuestos_eur,2)}</b></td><td>${fmt(r.coste_sin_impuestos_eur/r.dias,2)}</td><td>${fmt(r.coste_sin_impuestos_eur/r.red_total_kWh,4)}</td></tr>`).join("")+"</tbody>"
+      :`<thead><tr><th class="l">Mes</th><th class="l">Tarifa</th><th>Días</th><th>IEE %</th><th>IEE €</th><th>IVA %</th><th>IVA €</th><th>Total pagado €</th><th>€/día</th><th>€/kWh red</th></tr></thead><tbody>`+
+        D.map(r=>`<tr><td>${lblMes(r.mes)}</td><td class="l">${r.tarifa}</td><td>${r.dias}</td><td>${fmt(r.iee_tipo_pct,2)}</td><td>${fmt(r.iee_eur,2)}</td><td>${r.iva_tipo_pct}</td><td>${fmt(r.iva_eur,2)}</td><td><b>${fmt(r.total_eur,2)}</b></td><td>${fmt(r.total_eur/r.dias,2)}</td><td>${fmt(r.total_eur/r.red_total_kWh,4)}</td></tr>`).join("")+"</tbody>";
+  }
+  const flag=r=>r.provisional?'<span class="flag">provisional</span>':r.estimado?'<span class="flag">prorrateada</span>':"";
+  function pintarKwh(){
+    kill("c-kwh");const D=F,pct=unidad==="pct";
+    const val=(r,k)=>pct?r[k]/r.consumo*100:r[k]/r.dias;
+    const o=base(pct?"% del consumo total":"kWh/día");
+    if(pct){o.scales.y.max=100;o.scales.y.ticks.callback=x=>x+" %"}
+    o.plugins.tooltip.callbacks={label:c=>{const r=D[c.dataIndex],k=c.dataset.key;
+        return ` ${c.dataset.label}: `+(pct?`${fmt(c.raw,1)} % (${fmt(r[k]/r.dias,1)} kWh/día)`:`${fmt(c.raw,1)} kWh/día (${fmt(r[k]/r.consumo*100,1)} %)`)},
+      footer:it=>{const r=D[it[0].dataIndex];return`Consumo total ${fmt(r.consumo/r.dias,1)} kWh/día · ${r.dias} días`}};
+    const mk=(l,k,c)=>Object.assign(bar(l,D.map(r=>val(r,k)),css(c)),{key:k});
+    charts["c-kwh"]=new Chart(document.getElementById("c-kwh"),{data:{labels:L(),datasets:[
+      mk("Red P1 punta","red_P1_kWh","--s1"),mk("Red P2 llano","red_P2_kWh","--s2"),mk("Red P3 valle","red_P3_kWh","--s3"),mk("Solar (autoconsumo)","autoconsumo_kWh","--solar")]},options:o,plugins:[marcas]});
+    leyenda("lg-kwh",[["Red P1 punta",css("--s1")],["Red P2 llano",css("--s2")],["Red P3 valle",css("--s3")],["Solar (autoconsumo)",css("--solar")]]);
+    document.getElementById("h-kwh").textContent="Consumo por periodo · "+(pct?"% del consumo total":"kWh/día");
+    document.getElementById("t-kwh").innerHTML=`<thead><tr><th class="l">Mes</th><th>Días</th><th>P1</th><th>P2</th><th>P3</th><th>Red</th><th>Generación</th><th>Vertido</th><th>Autoconsumo</th><th>Consumo</th><th>kWh/día</th><th>% autoconsumida</th><th>% vertida</th><th>% solar del consumo</th></tr></thead><tbody>`+
+      D.map(r=>`<tr><td>${lblMes(r.mes)}${flag(r)}</td><td>${r.dias}</td><td>${fmt(r.red_P1_kWh)}</td><td>${fmt(r.red_P2_kWh)}</td><td>${fmt(r.red_P3_kWh)}</td><td>${fmt(r.red_total_kWh)}</td><td>${fmt(r.generacion_kWh)}</td><td>${fmt(r.excedente_kWh)}</td><td>${fmt(r.autoconsumo_kWh)}</td><td><b>${fmt(r.consumo)}</b></td><td>${fmt(r.consumo/r.dias,1)}</td><td>${pc(r.autoconsumo_kWh,r.generacion_kWh)}</td><td>${pc(r.excedente_kWh,r.generacion_kWh)}</td><td>${pc(r.autoconsumo_kWh,r.consumo)}</td></tr>`).join("")+"</tbody>";
+  }
+
+  document.getElementById("notas").innerHTML=[
+    "Definiciones: consumo = red + autoconsumo; autoconsumo = generación (prorrateada a los días de la factura) − vertido de factura. % autoconsumida y % vertida sobre la producción; % solar sobre el consumo.",
+    "Estaciones por mes de factura: invierno dic–feb, primavera mar–may, verano jun–ago, otoño sep–nov. Sin ajuste por grados-día ni descuento de coches.",
+    `Generación prorrateada o provisional: ${d.filter(r=>r.estimado).map(r=>lblMes(r.mes)).join(", ")}. Su autoconsumo y consumo son estimados.`,
+    "Las líneas discontinuas marcan cambios de etapa (coches) y de comercializadora."
+  ].map(p=>`<p>${p}</p>`).join("");
+
+  /* ---------- Controles ---------- */
+  const press=(sel,on)=>document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",on(b)));
+  const guardar=()=>{try{localStorage.setItem("casa01-filtro2",JSON.stringify({f:filtro,desde,hasta}))}catch(e){}};
+  const todo=()=>{F=filtrar();descripcion();if(!F.length)return;resumen();solar();costeMes();pintarCoste();pintarKwh()};
+  fp.querySelectorAll("button").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;press("#f-periodo button",x=>x.dataset.f===filtro);guardar();todo()});
+  fd.onchange=()=>{desde=fd.value;guardar();todo()}; fh.onchange=()=>{hasta=fh.value;guardar();todo()};
+  document.getElementById("m-sin").onclick=()=>{modo="sin";press("#m-sin,#m-con",x=>x.id==="m-sin");pintarCoste()};
+  document.getElementById("m-con").onclick=()=>{modo="con";press("#m-sin,#m-con",x=>x.id==="m-con");pintarCoste()};
+  document.getElementById("u-kwh").onclick=()=>{unidad="kwh";press("#u-kwh,#u-pct",x=>x.id==="u-kwh");pintarKwh()};
+  document.getElementById("u-pct").onclick=()=>{unidad="pct";press("#u-kwh,#u-pct",x=>x.id==="u-pct");pintarKwh()};
+  document.getElementById("s-kwh").onclick=()=>{usolar="kwh";press("#s-kwh,#s-pct",x=>x.id==="s-kwh");solar()};
+  document.getElementById("s-pct").onclick=()=>{usolar="pct";press("#s-kwh,#s-pct",x=>x.id==="s-pct");solar()};
+  todo();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change",todo);
+  new MutationObserver(todo).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+  /* ---------- Navegación ---------- */
+  (function(){
+    const links=[...document.querySelectorAll(".secnav a,.tabbar a")];
+    const marcar=id=>links.forEach(a=>a.setAttribute("aria-current",a.dataset.sec===id));
+    const secs=[...new Set(links.map(a=>a.dataset.sec))].map(id=>document.getElementById(id)).filter(Boolean);
+    const vis=new Map();
+    const io=new IntersectionObserver(es=>{es.forEach(e=>vis.set(e.target.id,e.isIntersecting?e.intersectionRatio:0));
+      let best=null,bv=0;secs.forEach(x=>{const v=vis.get(x.id)||0;if(v>bv){bv=v;best=x.id}});if(best)marcar(best)},
+      {rootMargin:"-120px 0px -45% 0px",threshold:[0,.1,.25,.5,.75,1]});
+    secs.forEach(x=>io.observe(x));
+    marcar(location.hash&&document.getElementById(location.hash.slice(1))?location.hash.slice(1):"resumen");
+    links.forEach(a=>a.addEventListener("click",()=>marcar(a.dataset.sec)));
+  })();
+  /* ---------- Coches ---------- */
+  (function coches(){
+    const T=t.vigente, FX=t.fiscalidad_vigente, KTAX=(1+FX.iee_pct/100)*(1+FX.iva_pct/100);
+    const PH={nombre:"BMW X3 30e",util:19.7,km:85}, BE={nombre:"Tesla Model 3 Standard"};
+    const DEF={phev_bat:20,phev_kmd:25,phev_kmf:30,phev_cons:23,phev_kw:3.7,bev_bat:60,bev_kmd:60,bev_kmf:60,bev_cons:14,bev_kw:3.7,ef:90,base_kw:1.5};
+    let P=Object.assign({},DEF), tax=true;
+    try{Object.assign(P,JSON.parse(localStorage.getItem("casa01-coches2")||"{}"))}catch(e){}
+    const e=x=>tax?x*KTAX:x, eu=(x,dd=2)=>fmt(e(x),dd)+" €";
+    const pr=T.energia_eur_kwh, exc=T.excedente_eur_kwh, pot=T.potencia;
+
+    const campos=[
+      ["phev_bat","BMW · batería útil","kWh",5,30,0.1],
+      ["phev_kmd","BMW · km al día (L-V)","km",0,300,1],
+      ["phev_kmf","BMW · km del fin de semana (total)","km",0,600,5],
+      ["phev_cons","BMW · consumo eléctrico","kWh/100 km",15,35,0.5],
+      ["phev_kw","BMW · potencia de carga","kW",1,11,0.1],
+      ["bev_bat","Tesla · batería útil","kWh",30,90,0.5],
+      ["bev_kmd","Tesla · km al día (L-V)","km",0,500,1],
+      ["bev_kmf","Tesla · km del fin de semana (total)","km",0,1000,5],
+      ["bev_cons","Tesla · consumo real","kWh/100 km",10,25,0.5],
+      ["bev_kw","Tesla · potencia de carga","kW",1,11,0.1],
+      ["ef","Eficiencia de carga (red → batería)","%",70,98,1],
+      ["base_kw","Casa · carga nocturna sin coches","kW",0,7,0.1]];
+    document.getElementById("cx-inputs").innerHTML=campos.map(([k,l,u,mi,ma,st])=>
+      `<label for="cx-${k}">${l}<span class="row"><input type="number" id="cx-${k}" min="${mi}" max="${ma}" step="${st}" value="${P[k]}"><small>${u}</small></span></label>`).join("");
+    campos.forEach(([k])=>document.getElementById("cx-"+k).addEventListener("input",ev=>{const v=parseFloat(ev.target.value);if(!isNaN(v)){P[k]=v;try{localStorage.setItem("casa01-coches2",JSON.stringify(P))}catch(e){}pintar()}}));
+
+    /* datos: E0 vs E1, mismo mes natural */
+    const j25=d.find(r=>r.mes==="2025-06"), j26=d.find(r=>r.mes==="2026-06");
+    const dia=(r,k)=>r[k]/r.dias;
+
+    function periodoHora(dw,h){ if(dw>=5)return 3; if(h<8)return 3; if((h>=10&&h<14)||(h>=18&&h<22))return 1; return 2; }
+
+    function pintar(){
+      const ef=P.ef/100, kwhPh=P.phev_bat/ef;
+      const bat=(km,c,b)=>Math.min(km*c/100,b)/ef;
+      const kwhPhDia=bat(P.phev_kmd,P.phev_cons,P.phev_bat), kwhPhFd=bat(P.phev_kmf/2,P.phev_cons,P.phev_bat), kwhPhSem=5*kwhPhDia+2*kwhPhFd;
+      const phevGasol=P.phev_kmd*P.phev_cons/100>P.phev_bat;
+      const kwhBeDia=bat(P.bev_kmd,P.bev_cons,P.bev_bat), kwhBeFd=bat(P.bev_kmf/2,P.bev_cons,P.bev_bat), kwhBeSem=5*kwhBeDia+2*kwhBeFd;
+      const hPh=kwhPhDia/P.phev_kw;
+      /* reparto Tesla: L-V cada noche lo de ese día; fin de semana lo de 2 días, de día */
+      const hBeNoche=kwhBeDia/P.bev_kw;
+      const potP2=pot.P2.kw, libre=potP2-P.base_kw;
+      const cabeEscalonado=hPh+hBeNoche<=8;
+      const picoSimult=P.base_kw+P.phev_kw+P.bev_kw;
+      const picoEsc=P.base_kw+Math.max(P.phev_kw,P.bev_kw);
+      const necesitaPot=Math.max(0,(cabeEscalonado?picoEsc:picoSimult)-potP2);
+      const mes=52/12, kwhMes=(kwhPhSem+kwhBeSem)*mes;
+      const cP3=kwhMes*pr.P3, cP1=kwhMes*pr.P1, cExc=kwhMes*exc;
+
+      /* veredicto */
+      const v=document.getElementById("cx-veredicto");
+      const okPot=necesitaPot<=0.05;
+      v.className="veredicto"+(cabeEscalonado&&okPot?"":" warn");
+      v.innerHTML=`<b>${cabeEscalonado&&okPot?"Carga todo en valle y escalona los dos coches: cabe en tus 8 h de P3 sin subir potencia.":(!cabeEscalonado?"Con estos km, BMW + Tesla no caben escalonados en las 8 h de valle entre semana.":"La carga escalonada supera la potencia contratada en valle.")}</b>
+        <span class="det">Coches: ${fmt(kwhMes)} kWh/mes de red · ${eu(cP3,0)}/mes en P3 · lo mismo en P1 costaría ${eu(cP1,0)}/mes. ${tax?"Con IEE "+fmt(FX.iee_pct,2)+" % e IVA "+FX.iva_pct+" % vigentes.":"Sin impuestos."}</span>`;
+
+      /* precios */
+      const filas=[["P1 punta",pr.P1,"var(--s1)"],["P2 llano",pr.P2,"var(--s2)"],["P3 valle",pr.P3,"var(--s3)"],["Excedente",exc,"var(--s4)"]], mx=pr.P1;
+      document.getElementById("cx-h-precio").textContent="Precio por periodo frente al excedente · €/kWh "+(tax?"con impuestos vigentes":"sin impuestos");
+      document.getElementById("cx-precios").innerHTML=filas.map(([n,p,c])=>`<div class="pbar"><span>${n}</span><span class="track"><span style="width:${p/mx*100}%;background:${c}"></span></span><span class="n">${fmt(e(p),4)}</span></div>`).join("")+
+        `<div class="tbl"><table><thead><tr><th class="l">Carga completa (${tax?"con imp.":"sin imp."})</th><th>kWh red</th><th>P1</th><th>P2</th><th>P3</th><th>Solar*</th></tr></thead><tbody>
+          <tr><td>BMW 0 → 100 %</td><td>${fmt(kwhPh,1)}</td><td>${eu(kwhPh*pr.P1)}</td><td>${eu(kwhPh*pr.P2)}</td><td><b>${eu(kwhPh*pr.P3)}</b></td><td>${eu(kwhPh*exc)}</td></tr>
+          <tr><td>Tesla · 100 km</td><td>${fmt(P.bev_cons/ef,1)}</td><td>${eu(P.bev_cons/ef*pr.P1)}</td><td>${eu(P.bev_cons/ef*pr.P2)}</td><td><b>${eu(P.bev_cons/ef*pr.P3)}</b></td><td>${eu(P.bev_cons/ef*exc)}</td></tr></tbody></table></div>`;
+      document.getElementById("cx-precio-nota").innerHTML=`*Solar = coste de oportunidad: lo que dejas de compensar (${fmt(e(exc),4)} €/kWh). Cargar con sol en vez de en valle ahorra solo <b>${fmt(e(pr.P3-exc),4)} €/kWh</b> (${eu(kwhPh*(pr.P3-exc))} por carga del BMW). La compensación nunca ha tocado el tope (máx. ${fmt(Math.max(...d.map(r=>-r.compensacion_eur/r.energia_eur))*100,0)} % del término de energía), así que el excedente siempre vale ${fmt(e(exc),4)} €/kWh.`;
+
+      /* datos */
+      const dP3=dia(j26,"red_P3_kWh")-dia(j25,"red_P3_kWh"), dC=dia(j26,"consumo")-dia(j25,"consumo");
+      document.getElementById("cx-datos").innerHTML=`<thead><tr><th class="l">kWh/día</th><th>jun-25 (E0)</th><th>jun-26 (E1)</th><th>Diferencia</th></tr></thead><tbody>
+        <tr><td>Consumo total</td><td>${fmt(dia(j25,"consumo"),1)}</td><td>${fmt(dia(j26,"consumo"),1)}</td><td><b>+${fmt(dC,1)}</b></td></tr>
+        <tr><td>Red P3 valle</td><td>${fmt(dia(j25,"red_P3_kWh"),1)}</td><td>${fmt(dia(j26,"red_P3_kWh"),1)}</td><td><b>+${fmt(dP3,1)}</b></td></tr>
+        <tr><td>Red P1 + P2</td><td>${fmt((j25.red_P1_kWh+j25.red_P2_kWh)/j25.dias,1)}</td><td>${fmt((j26.red_P1_kWh+j26.red_P2_kWh)/j26.dias,1)}</td><td>+${fmt((j26.red_P1_kWh+j26.red_P2_kWh)/j26.dias-(j25.red_P1_kWh+j25.red_P2_kWh)/j25.dias,1)}</td></tr></tbody>`;
+      document.getElementById("cx-datos-nota").innerHTML=`Sin datos reales de carga. El BMW carga siempre en valle, así que el aumento de P3 (+${fmt(dP3,1)} kWh/día) es la mejor aproximación. Tus km (${P.phev_kmd} km/día L-V) explican unos ${fmt(kwhPhSem/7,1)} kWh/día; el resto puede ser más refrigeración en jun-26 u otros usos. Estimación débil: E0 es un solo mes.`;
+
+      /* resultados simulador */
+      const sem=(c,t)=>`<span class="sem ${c}">${t}</span>`;
+      document.getElementById("cx-res").innerHTML=[
+        `<div class="kpi"><div class="lbl"><span>BMW</span></div><div class="val">${hh(hPh)}<small>h por noche</small></div><div class="det">${P.phev_kmd} km/día → ${fmt(kwhPhDia,1)} kWh de red a ${fmt(P.phev_kw,1)} kW · ${fmt(kwhPhSem*mes)} kWh/mes · ${eu(kwhPhSem*mes*pr.P3,0)}/mes en P3${phevGasol?' · supera la autonomía eléctrica: el resto lo hace con gasolina':''}</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Tesla</span></div><div class="val">${hh(hBeNoche)}<small>h por noche</small></div><div class="det">${P.bev_kmd} km/día → ${fmt(kwhBeDia,1)} kWh de red a ${fmt(P.bev_kw,1)} kW · ${fmt(kwhBeSem*mes)} kWh/mes · ${eu(kwhBeSem*mes*pr.P3,0)}/mes en P3</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Carga completa 0 → 100 %</span></div><div class="pair">
+           <div><div class="val">${hh(kwhPh/P.phev_kw)}<small>h</small></div><div class="det">BMW · ${fmt(P.phev_bat,1)} kWh a ${fmt(P.phev_kw,1)} kW</div></div>
+           <div><div class="val">${hh(P.bev_bat/ef/P.bev_kw)}<small>h</small></div><div class="det">Tesla · ${fmt(P.bev_bat,1)} kWh a ${fmt(P.bev_kw,1)} kW</div></div></div>
+           <div class="det">${P.bev_bat/ef/P.bev_kw>8?`Un Tesla vacío no se llena en una noche de valle (8 h): hacen falta ${fmt(P.bev_bat/ef/P.bev_kw,1)} h. Repón cada noche lo del día o usa el fin de semana, que es todo P3.`:"Un Tesla vacío se llena en una noche de valle."} Con 7,4 kW: BMW ${hh(kwhPh/7.4)} h, Tesla ${hh(P.bev_bat/ef/7.4)} h.</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Ventana de valle L-V</span></div><div class="val">${fmt(hPh+hBeNoche,1)}<small>h de 8 h</small></div><div class="det">${cabeEscalonado?sem("ok","Cabe escalonado"):sem("ko","No cabe escalonado")} · BMW 0:00 → ${hh(hPh)}, Tesla ${hh(hPh)} → ${hh(Math.min(8,hPh+hBeNoche))}</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Potencia en valle</span><span class="tag">P2 · ${fmt(potP2,1)} kW</span></div><div class="val">${fmt(cabeEscalonado?picoEsc:picoSimult,1)}<small>kW de pico</small></div><div class="det">${okPot?sem("ok","Dentro de la potencia"):sem("ko","Supera en "+fmt(necesitaPot,1)+" kW")} · los dos a la vez serían ${fmt(picoSimult,1)} kW${necesitaPot>0.05?` · subir P2 ${fmt(Math.ceil(necesitaPot*10)/10,1)} kW cuesta ${eu(Math.ceil(necesitaPot*10)/10*pot.P2.eur_kw_dia*365,0)}/año`:""}</div></div>`,
+        `<div class="kpi"><div class="lbl"><span>Coste de cargar en P1</span></div><div class="val">${eu((cP1-cP3)*12,0)}<small>/año extra</small></div><div class="det">Frente a cargar todo en valle. Cargar con sol en vez de valle ahorraría ${eu((cP3-cExc)*12,0)}/año como máximo.</div></div>`
+      ].join("");
+
+      /* plan semanal */
+      const dias=["L","M","X","J","V","S","D"], g=document.getElementById("cx-semana");
+      let html='<span></span>'+Array.from({length:24},(_,h)=>`<span class="h">${h}</span>`).join("");
+      const kwhBeFinde=kwhBeFd, hPhFd=kwhPhFd/P.phev_kw;
+      for(let dw=0;dw<7;dw++){
+        html+=`<span class="d">${dias[dw]}</span>`;
+        for(let h=0;h<24;h++){
+          const p=periodoHora(dw,h), col=p===1?"var(--s1)":p===2?"var(--s2)":"var(--s3)";
+          let b=false,tt=false;
+          if(dw<5){ b=hPh>0&&h<Math.ceil(hPh); tt=h>=Math.floor(hPh)&&h<Math.ceil(hPh+hBeNoche)&&hBeNoche>0; }
+          else{ const ini=11; tt=h>=ini&&h<ini+Math.ceil(kwhBeFinde/P.bev_kw); b=hPhFd>0&&h>=ini+Math.ceil(kwhBeFinde/P.bev_kw)&&h<ini+Math.ceil(kwhBeFinde/P.bev_kw)+Math.ceil(hPhFd); }
+          html+=`<span class="c" style="background:${col}" title="${dias[dw]} ${h}:00 · P${p}">${b?'<b class="pill b">X3</b>':""}${tt?'<b class="pill t">M3</b>':""}</span>`;
+        }
+      }
+      g.innerHTML=html;
+
+      /* consejos */
+      document.getElementById("cx-consejos").innerHTML=[
+        `<b>Sigue cargando solo en valle, como hasta ahora.</b> P3 cuesta ${fmt(e(pr.P3),4)} €/kWh; P1 cuesta ${fmt(pr.P1/pr.P3,1)} veces más. Es la decisión que más dinero mueve.`,
+        `<b>No persigas el sol entre semana.</b> De 10 a 14 h L-V es P1: si el coche tira más de lo que producen las placas, lo que falta lo pagas a ${fmt(e(pr.P1),4)} €/kWh. Con sol pleno el ahorro frente a valle es solo ${fmt(e(pr.P3-exc),4)} €/kWh.`,
+        `<b>Fines de semana y festivos nacionales, carga de día.</b> Todo es P3, así que la parte que cubran las placas es un pequeño extra sin riesgo. Es el mejor momento para la carga completa semanal del Tesla.`,
+        `<b>Escalona los dos coches.</b> BMW primero, a las 0:00, y Tesla programado para empezar a las ${hh(hPh)}. Con ${fmt(P.phev_kw,1)} + ${fmt(P.bev_kw,1)} kW a la vez superarías tus ${fmt(potP2,1)} kW y saltaría el limitador del contador.`,
+        `<b>Tesla (LFP): límite de carga al 100 % y carga programada.</b> El coste se controla con la hora de inicio, no con el %. Si una noche no cabe, baja los amperios en la app en vez de solapar con el BMW.`,
+        `<b>BMW: hora de inicio fija a las 0:00 en My BMW.</b> Con ${P.phev_kmd} km/día repone ${fmt(kwhPhDia,1)} kWh y termina hacia las ${hh(hPh)}. Las horas de carga dependen de los km recorridos, no del tamaño de la batería.`,
+        `<b>En invierno, cuenta con la aerotermia.</b> Si de noche el suelo radiante tira 2-3 kW, revisa el margen en el simulador con esa carga de casa. Si el pico se acerca a ${fmt(potP2,1)} kW, es más barato bajar amperios que subir potencia.`,
+        `<b>Subir potencia solo en valle es barato pero no hace falta hoy.</b> Cada kW extra en P2 cuesta ${eu(pot.P2.eur_kw_dia*365,1)}/año, frente a ${eu(pot.P1.eur_kw_dia*365,1)}/año en P1. Tiene sentido solo si quieres cargar los dos a la vez; la subida tiene además un coste de tramitación que no está incluido aquí.`,
+        `<b>Preacondiciona conectado y antes de las 8:00.</b> La energía sale de la red en P3 y no de la batería. Después de las 8:00 L-V ya es P2.`,
+        `<b>Para pasar de estimaciones a datos reales:</b> apunta cada mes los kWh cargados que muestran My BMW y la app de Tesla. Así se podrá separar coches, climatización y consumo base sin suposiciones.`
+      ].map(x=>`<li>${x}</li>`).join("");
+
+      document.getElementById("cx-notas").innerHTML=[
+        `Supuestos: BMW X3 30e con ~20 kWh útiles (19,7 netos de 22,4 brutos según ficha) y unos ${PH.km} km eléctricos (consumo ~23 kWh/100 km); cada noche se repone lo gastado en el día. Tesla Model 3 Standard desde nov-2026: LFP con 60 kWh útiles (64 brutos), consumo homologado 13,0 kWh/100 km y real medio ~13,5; uso 14 por defecto (en invierno sube). Ambos aceptan hasta 11 kW AC, pero en casa los limita el cargador y la potencia contratada; por eso el valor por defecto es 3,7 kW (16 A), que encaja con haber cargado el BMW en valle sin cortes con 7,6 kW contratados. Pendiente de confirmar con tu cargador.`,
+        `Precios de energía y potencia de la tarifa vigente (${T.comercializadora} ${T.producto}). ${tax?"Con impuestos vigentes: IEE "+fmt(FX.iee_pct,2)+" % e IVA "+FX.iva_pct+" %.":"Sin impuestos."} Mes = 52/12 semanas.`,
+        `Plan de fin de semana: el Tesla carga desde las 11:00 lo de dos días y después el BMW, para aprovechar el sol. Entre semana, cada noche el Tesla repone lo del día.`
+      ].map(p=>`<p>${p}</p>`).join("");
+    }
+    function hh(x){const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")}
+    pintar();
+  })();
+
+});
+})();
+</script>
+
+</body>
+</html>
