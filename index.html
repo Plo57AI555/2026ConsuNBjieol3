@@ -417,7 +417,6 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
           <div class="donut"><canvas id="d-prod" aria-label="Reparto de la producción solar"></canvas><div class="center" id="d-prod-c"></div></div>
           <div class="dleg" id="d-prod-l"></div>
         </div>
-        <p class="det" id="d-prod-n"></p>
       </div>
       <div class="panel donut-panel">
         <h3><span class="lg">De lo que consume la casa</span><span class="sm">Origen del consumo</span></h3>
@@ -425,11 +424,10 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
           <div class="donut"><canvas id="d-cons" aria-label="Origen del consumo"></canvas><div class="center" id="d-cons-c"></div></div>
           <div class="dleg" id="d-cons-l"></div>
         </div>
-        <p class="det" id="d-cons-n"></p>
       </div>
     </div>
     <div class="kpis mini" id="kpi-grid"></div>
-    <p class="fn">Todas las cifras con impuestos (IEE + IVA de cada factura).</p>
+    <p class="fn">Importes en € con impuestos (IEE + IVA de cada factura).</p>
   </section>
 
   <section id="solar" aria-labelledby="h-solar">
@@ -767,11 +765,9 @@ cargar().then(({d,t})=>{
     document.getElementById("d-prod-c").innerHTML=`<b>${pc(au,gen)} %</b><span>autoconsumida</span>`;
     document.getElementById("d-prod-l").innerHTML=dleg([["Autoconsumo",au,"var(--solar)"],["Vertida",exc,"var(--vert)"]],gen);
     const top=[...F].sort((a,b)=>b.excedente_kWh/b.dias-a.excedente_kWh/a.dias).slice(0,3).filter(r=>r.excedente_kWh>0);
-    document.getElementById("d-prod-n").innerHTML=`Producción ${fmt(gen)} kWh${anual?"":" en el periodo"}. Más vertido: ${top.map(r=>`${lblMes(r.mes)} (${pc(r.excedente_kWh,r.generacion_kWh)} %)`).join(", ")||"–"}.`;
     donut("d-cons",[au,red],[cSol,cRed],["Solar","Red"]);
     document.getElementById("d-cons-c").innerHTML=`<b>${pc(au,cons)} %</b><span>es solar</span>`;
     document.getElementById("d-cons-l").innerHTML=dleg([["Solar",au,"var(--solar)"],["Red",red,"var(--grid-in)"]],cons);
-    document.getElementById("d-cons-n").textContent=`Consumo ${fmt(cons)} kWh · ${fmt(cons/dias,1)} kWh/día.`;
     document.getElementById("cm-kwh").innerHTML=`${fmt(total/red,4)}<small>€/kWh</small>`;
     /* por tramo: energía del tramo + su parte de potencia, con IEE e IVA de cada factura.
        Potencia de valle → P3; potencia punta+llano → P1 y P2 en proporción a sus kWh */
@@ -792,7 +788,7 @@ cargar().then(({d,t})=>{
     const p1=S("red_P1_kWh")/red,p2=S("red_P2_kWh")/red,p3=S("red_P3_kWh")/red;
     const tile=(l,tag,v,u,det,ex="")=>`<div class="kpi"><div class="lbl"><span>${l}</span>${tag}</div><div class="val">${v}<small>${u}</small></div><div class="det">${det}</div>${ex}</div>`;
     document.getElementById("kpi-grid").innerHTML=[
-      tile("Precio solo energía","",fmt(eneC/red,4),"€/kWh","Término de energía / kWh de red"),
+      tile("Consumo de la casa","",fmt(cons),"kWh",`${fmt(au)} kWh desde las placas (${pc(au,cons)} %)`),
       tile(anual?"Coste del año":"Coste del periodo","",fmt(total,0),"€",`${fmt(total/dias*365/12,0)} €/mes · ${fmt(total/dias,2)} €/día`),
       tile("Peso de la potencia","",pc(potC,total),"%",`${fmt(potC,0)} € del total pagado`),
       tile("Compensación","",fmt(-compC,0),"€",`${pc(-compC,eneC)} % del término de energía`)
