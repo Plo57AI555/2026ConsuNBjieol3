@@ -360,6 +360,25 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
 .i-btn{display:inline-grid;place-items:center;width:22px;height:22px;margin-left:4px;margin-right:-4px;border:0;border-radius:50%;background:none;color:var(--accent);cursor:pointer;vertical-align:middle;padding:0}
 .i-btn:hover{background:var(--surface)}
 .i-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+/* coste real */
+.cm2{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-bottom:1px solid var(--grid);padding-bottom:8px}
+.cm2 .cm{border:0;padding:0}
+.cm2 .cm b{font-size:22px}
+.cm.real b{color:var(--good)}
+.tr{grid-template-columns:10px 1fr auto auto!important;gap:10px!important}
+.tr b{font-size:15px!important;text-align:right;min-width:52px}
+.tr b.rl{color:var(--good)}
+.tr.th span{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:right;min-width:52px}
+.tr.th span:nth-child(-n+2){min-width:0}
+@media (max-width:720px){
+  .cm2{grid-template-columns:1fr;gap:4px}
+  .cm2 .cm b{font-size:18px!important}
+  .tr{gap:5px!important;font-size:11px!important}
+  .tr span:nth-child(2){white-space:nowrap}
+  .tr b{font-size:12.5px!important;min-width:42px}
+  .tr.th span{min-width:42px;font-size:9px}
+}
+@media (max-width:720px){.tr .w{display:none}.tr b{font-size:13.5px!important}}
 @media (max-width:520px){h1{font-size:22px}.chart{height:260px}.kpi .val{font-size:22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -374,7 +393,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
     </button>
-    <span class="eyebrow">v1.1</span>
+    <span class="eyebrow">v1.2</span>
     <h1>Panel Energético</h1>
     <div class="meta" id="meta"></div>
   </header>
@@ -402,14 +421,18 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <div class="panel cost-panel">
         <h3>Coste medio</h3>
         <div class="cbig">
-          <div class="cm"><span class="k">Por kWh de red</span><b id="cm-kwh"></b></div>
+          <div class="cm2">
+            <div class="cm"><span class="k">Por kWh de red</span><b id="cm-kwh"></b></div>
+            <div class="cm real"><span class="k">Coste real*</span><b id="cm-real"></b></div>
+          </div>
           <div class="tramos">
-            <div class="tr"><i style="background:var(--s1)"></i><span>Punta P1</span><b id="cm-p1"></b></div>
-            <div class="tr"><i style="background:var(--s2)"></i><span>Llano P2</span><b id="cm-p2"></b></div>
-            <div class="tr"><i style="background:var(--s3)"></i><span>Valle P3</span><b id="cm-p3"></b></div>
+            <div class="tr th"><span></span><span></span><span>Red</span><span>Real*</span></div>
+            <div class="tr"><i style="background:var(--s1)"></i><span><span class="w">Punta </span>P1</span><b id="cm-p1"></b><b class="rl" id="cm-p1r"></b></div>
+            <div class="tr"><i style="background:var(--s2)"></i><span><span class="w">Llano </span>P2</span><b id="cm-p2"></b><b class="rl" id="cm-p2r"></b></div>
+            <div class="tr"><i style="background:var(--s3)"></i><span><span class="w">Valle </span>P3</span><b id="cm-p3"></b><b class="rl" id="cm-p3r"></b></div>
           </div>
         </div>
-        <p class="fn">Con impuestos (IEE + IVA). Incluye la potencia de cada tramo.</p>
+        <p class="fn">Con impuestos (IEE + IVA). Incluye la potencia de cada tramo. *Real: incluye también la producción solar como kWh gratis (reparto por tramo estimado).</p>
       </div>
       <div class="panel donut-panel">
         <h3><span class="lg">De lo que producen las placas</span><span class="sm">Producción solar</span></h3>
@@ -681,6 +704,27 @@ cargar().then(({d,t})=>{
     `<span>Periodo de análisis: ${lblMes(d[0].mes)} → ${lblMes(ult.mes)}</span>`+
     `<span class="chip">Tarifa vigente · desde ${fecha(v.desde)}<button type="button" class="i-btn" id="ver-tarifa" aria-haspopup="dialog" aria-label="Ver precios de la tarifa sin impuestos" title="Precios sin impuestos"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></span>`;
 
+  /* ---------- Reparto estimado de la solar por tramo ----------
+     Perfil de producción tipo campana (sin^1,5) entre orto y ocaso de Madrid por mes, mediodía solar 13:15 (CET) / 14:15 (CEST).
+     L-V se reparte por horas de P1/P2/P3; sábados y domingos van enteros a P3. Festivos no considerados. */
+  const DLM=[9.5,10.5,11.8,13.2,14.4,15.0,14.7,13.6,12.3,11.0,9.8,9.2];
+  const ultDom=(y,m)=>{const x=new Date(Date.UTC(y,m,0));x.setUTCDate(x.getUTCDate()-x.getUTCDay());return x};
+  const fracCache={};
+  function fracDia(dte){
+    const y=dte.getUTCFullYear(),m=dte.getUTCMonth(),wd=(dte.getUTCDay()+6)%7, key=y+"-"+m+"-"+(wd>=5?"w":"l")+(dte>=ultDom(y,3)&&dte<ultDom(y,10)?"s":"i");
+    if(fracCache[key])return fracCache[key];
+    const L=DLM[m], noon=13.25+(key.endsWith("s")?1:0), o={P1:0,P2:0,P3:0};
+    for(let i=0;i<96;i++){const h=i/4+0.125,x=(h-(noon-L/2))/L;if(x<=0||x>=1)continue;const p=Math.pow(Math.sin(Math.PI*x),1.5);
+      const per=wd>=5||h<8?"P3":((h>=10&&h<14)||(h>=18&&h<22))?"P1":"P2";o[per]+=p}
+    const s=o.P1+o.P2+o.P3;["P1","P2","P3"].forEach(k=>o[k]/=s);return fracCache[key]=o;
+  }
+  function fracSolar(r){
+    if(r._fr)return r._fr;
+    const a=new Date(r.fecha_inicio+"T00:00:00Z"),b=new Date(r.fecha_fin+"T00:00:00Z"),o={P1:0,P2:0,P3:0};let n=0;
+    for(let t2=new Date(a.getTime()+864e5);t2<=b;t2=new Date(t2.getTime()+864e5)){const f=fracDia(t2);o.P1+=f.P1;o.P2+=f.P2;o.P3+=f.P3;n++}
+    ["P1","P2","P3"].forEach(k=>o[k]/=n||1);return r._fr=o;
+  }
+
   /* ---------- Tarifa sin impuestos (consulta) ---------- */
   (function(){
     const m=document.getElementById("m-tarifa"), pw=v.potencia, kw=pw.P1.kw;
@@ -769,7 +813,8 @@ cargar().then(({d,t})=>{
     donut("d-cons",[au,red],[cSol,cRed],["Solar","Red"]);
     document.getElementById("d-cons-c").innerHTML=`<b>${pc(au,cons)} %</b><span>es solar</span>`;
     document.getElementById("d-cons-l").innerHTML=dleg([["Solar",au,"var(--solar)"],["Red",red,"var(--grid-in)"]],cons);
-    document.getElementById("cm-kwh").innerHTML=`${fmt(total/red,4)}<small>€/kWh</small>`;
+    document.getElementById("cm-kwh").innerHTML=`${fmt(total/red,4)}`;
+    document.getElementById("cm-real").innerHTML=`${fmt(total/cons,4)}`;
     /* por tramo: energía del tramo + su parte de potencia, con IEE e IVA de cada factura.
        Potencia de valle → P3; potencia punta+llano → P1 y P2 en proporción a sus kWh */
     const shareP2=r=>{const h=(t.historial||[]).find(x=>r.fecha_fin<=x.hasta&&r.fecha_fin>=x.desde);
@@ -779,7 +824,12 @@ cargar().then(({d,t})=>{
       tr.P1+=(r.red_P1_kWh*r.precio_P1_eur_kWh+ppl*r.red_P1_kWh/e12)*k;
       tr.P2+=(r.red_P2_kWh*r.precio_P2_eur_kWh+ppl*r.red_P2_kWh/e12)*k;
       tr.P3+=(r.red_P3_kWh*r.precio_P3_eur_kWh+pv)*k;});
-    ["P1","P2","P3"].forEach(p=>document.getElementById("cm-"+p.toLowerCase()).innerHTML=`${fmt(tr[p]/S("red_"+p+"_kWh"),4)}<small>€/kWh</small>`);
+    const au3={P1:0,P2:0,P3:0};
+    F.forEach(r=>{const fr=fracSolar(r);["P1","P2","P3"].forEach(p=>au3[p]+=r.autoconsumo_kWh*fr[p])});
+    ["P1","P2","P3"].forEach(p=>{const k=p.toLowerCase(),rd=S("red_"+p+"_kWh");
+      document.getElementById("cm-"+k).textContent=fmt(tr[p]/rd,4);
+      const el=document.getElementById("cm-"+k+"r");el.textContent=fmt(tr[p]/(rd+au3[p]),4);
+      el.title=`${fmt(au3[p])} kWh solares estimados en ${p} (${pc(au3[p],rd+au3[p])} % del consumo del tramo)`;});
     const r1=S("red_P1_kWh"),r2=S("red_P2_kWh"),r3=S("red_P3_kWh");
     donut("d-tramo",[r1,r2,r3],[css("--s1"),css("--s2"),css("--s3")],["P1 punta","P2 llano","P3 valle"]);
     document.getElementById("d-tramo-c").innerHTML=`<b>${pc(r3,red)} %</b><span>en valle P3</span>`;
