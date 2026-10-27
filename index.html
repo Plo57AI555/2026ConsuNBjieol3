@@ -18,19 +18,19 @@
   --bg:#f6f6f3; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --axis:#c3c2b7; --line:rgba(11,11,11,.10); --accent:#1c5cab; --accent-soft:#e6eefa;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
-  --warn:#9a6400; --warn-bg:#fdf3dc; --good:#0a7d0a; --bad:#c03030; --solar:#eda100; --vert:#2a78d6; --grid-in:#9a9aa3;
+  --warn:#9a6400; --warn-bg:#fdf3dc; --good:#0a7d0a; --bad:#c03030; --car-t:#2a78d6; --car-x:#6250d6; --solar:#eda100; --vert:#2a78d6; --grid-in:#9a9aa3;
   --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f0f0e; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --line:rgba(255,255,255,.10); --accent:#86b6ef; --accent-soft:#1c2a3d;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
-  --warn:#f0c060; --warn-bg:#2e2410; --good:#3fbf3f; --bad:#e66767; --solar:#c98500; --vert:#3987e5; --grid-in:#6b6b73; color-scheme:dark}}
+  --warn:#f0c060; --warn-bg:#2e2410; --good:#3fbf3f; --bad:#e66767; --car-t:#3987e5; --car-x:#9085e9; --solar:#c98500; --vert:#3987e5; --grid-in:#6b6b73; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f0f0e; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --line:rgba(255,255,255,.10); --accent:#86b6ef; --accent-soft:#1c2a3d;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
-  --warn:#f0c060; --warn-bg:#2e2410; --good:#3fbf3f; --bad:#e66767; --solar:#c98500; --vert:#3987e5; --grid-in:#6b6b73; color-scheme:dark}
+  --warn:#f0c060; --warn-bg:#2e2410; --good:#3fbf3f; --bad:#e66767; --car-t:#3987e5; --car-x:#9085e9; --solar:#c98500; --vert:#3987e5; --grid-in:#6b6b73; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.5}
 .wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:36px}
@@ -379,6 +379,119 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
   .tr.th span{min-width:42px;font-size:9px}
 }
 @media (max-width:720px){.tr .w{display:none}.tr b{font-size:13.5px!important}}
+/* coches v1.6 */
+.cx-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cx-stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cx-stat .k{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.cx-stat b{font-size:26px;line-height:1.15}
+.cx-stat b small{font-size:13px;font-weight:500;color:var(--ink-2);margin-left:3px}
+.cx-stat .d{font-size:12px;color:var(--ink-2)}
+.cx-strips{display:flex;flex-direction:column;gap:14px}
+.strip{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:center}
+.strip .nm{font-size:13px;font-weight:600;line-height:1.25}
+.strip .nm span{display:block;font-weight:400;font-size:11.5px;color:var(--ink-2)}
+.bar24{position:relative;height:46px;display:flex;flex-direction:column;gap:3px}
+.bar24 .tramos24{display:grid;grid-template-columns:repeat(24,1fr);height:12px;border-radius:4px;overflow:hidden;gap:1px}
+.bar24 .ev{position:relative;height:20px}
+.bar24 .ev span{position:absolute;top:0;height:20px;border-radius:5px;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;padding:0 6px}
+.ev .car{background:var(--ink);color:var(--surface)}
+.ev .sol{background:repeating-linear-gradient(45deg,var(--solar) 0 6px,color-mix(in srgb,var(--solar) 70%,var(--surface)) 6px 12px);color:#2a1d00}
+.bar24 .hrs{display:grid;grid-template-columns:repeat(24,1fr);font-size:9.5px;color:var(--muted)}
+.bar24 .hrs span:nth-child(odd){visibility:hidden}
+.lg-car{background:var(--ink)!important}
+.lg-sol{background:repeating-linear-gradient(45deg,var(--solar) 0 3px,color-mix(in srgb,var(--solar) 60%,var(--surface)) 3px 6px)!important}
+.cx-week{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.wk{border:1px solid var(--line);border-radius:8px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:var(--bg)}
+.wk .when{font-size:11px;color:var(--ink-2);line-height:1.2}
+.wk .who{font-size:12.5px;font-weight:700;padding:3px 8px;border-radius:999px}
+.who.t{background:var(--accent);color:var(--surface)}
+.who.x{background:var(--surface);color:var(--ink);border:1.5px solid var(--ink)}
+.wk .kwh{font-size:10.5px;color:var(--muted)}
+.wk.day{background:color-mix(in srgb,var(--solar) 10%,var(--bg))}
+.cx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:10px}
+.rc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:38px 1fr;gap:4px 12px;align-items:start}
+.rc .ic{grid-row:span 2;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.rc.sol .ic{background:color-mix(in srgb,var(--solar) 18%,var(--surface));color:var(--warn)}
+.rc.frio .ic{background:color-mix(in srgb,var(--s1) 14%,var(--surface));color:var(--s1)}
+.rc.ok .ic{background:color-mix(in srgb,var(--good) 14%,var(--surface));color:var(--good)}
+.rc.alerta{border-color:var(--warn);background:var(--warn-bg)}
+.rc.alerta .ic{background:var(--surface);color:var(--warn)}
+.rc h4{margin:0;font-size:14px;line-height:1.3}
+.rc p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.rc .bdg{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--ink-2);vertical-align:1px}
+@media (max-width:720px){
+  .cx-stats{gap:6px}
+  .cx-stat{padding:10px}
+  .cx-stat b{font-size:20px}
+  .cx-stat .k{font-size:9.5px}
+  .cx-stat .d{font-size:10.5px}
+  .strip{grid-template-columns:1fr;gap:4px}
+  .ev span{font-size:10px!important;padding:0 3px!important}
+  .cx-week{grid-template-columns:repeat(4,1fr)}
+}
+
+.cx-week{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:8px!important}
+.wd{display:flex;flex-direction:column;gap:6px;min-width:0}
+.wd-h{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;padding:4px 0;border-bottom:2px solid var(--line)}
+.wd.fds .wd-h{border-bottom-color:var(--s3)}
+.wd.hoy .wd-h{border-bottom-color:var(--accent)}
+.hoy-b{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:var(--accent);color:var(--surface);padding:1px 6px;border-radius:999px}
+.ss{--c:var(--car-t);border-radius:10px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;background:color-mix(in srgb,var(--c) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 30%,transparent)}
+.ss.ss-x{--c:var(--car-x)}
+.ss .car{width:100%;max-width:64px;color:var(--c)}
+.ss .car svg{width:100%;height:auto;display:block}
+.ss .nm{font-size:14px;font-weight:700;color:var(--c)}
+.ss .when{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-2);white-space:nowrap}
+.ss .when svg{color:var(--c)}
+.batb{width:80%;height:6px;border-radius:3px;background:color-mix(in srgb,var(--c) 18%,var(--surface));overflow:hidden}
+.batb span{display:block;height:100%;background:var(--c);border-radius:3px}
+.ss .kw{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media (max-width:720px){
+  .cx-week{grid-template-columns:repeat(4,1fr)!important;gap:6px!important}
+  .ss{padding:8px 4px 6px}
+  .ss .when{font-size:10px;white-space:normal;text-align:center;justify-content:center}
+}
+
+.cx-stats{grid-template-columns:repeat(3,1fr)}
+.cx-stats .cx-fn{grid-column:1/-1;margin:0;font-size:11.5px;color:var(--ink-2);font-weight:400}
+.cx-stat.st-t{border-top:3px solid var(--car-t)}
+.cx-stat.st-x{border-top:3px solid var(--car-x)}
+.cx-stat.st-t .k{color:var(--car-t)}.cx-stat.st-x .k{color:var(--car-x)}
+
+/* bloque de coches con foto */
+.cx-stats{display:block!important;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.cv-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:6px}
+.cv-t{font-size:14.5px;font-weight:600}
+.cv-tot{font-size:13px;color:var(--ink-2);background:var(--bg);border:1px solid var(--line);padding:3px 12px;border-radius:999px}
+.cv-tot b{color:var(--ink);font-size:15px}
+.cv-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cv{display:grid;grid-template-columns:minmax(0,1.25fr) 1fr;align-items:center;gap:12px;padding:6px 4px;border-radius:10px;
+  background:radial-gradient(ellipse 70% 55% at 32% 78%,color-mix(in srgb,var(--c) 16%,transparent),transparent 70%)}
+.cv-t{--c:var(--car-t)}
+.cv.cv-t{--c:var(--car-t)}.cv.cv-x{--c:var(--car-x)}
+.cv img{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 10px rgba(0,0,0,.18))}
+.cv-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cv-nm{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c)}
+.cv-eur{font-size:32px;font-weight:700;line-height:1.05}
+.cv-eur small{font-size:15px;font-weight:500;color:var(--ink-2)}
+.cv-sub{font-size:12px;color:var(--ink-2)}
+.cx-stats .cx-fn{margin:8px 0 0;font-size:11px;color:var(--muted)}
+.ss .car-img{width:100%;max-width:92px;height:auto;display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.18))}
+.ss{padding:8px 6px 7px!important;gap:3px!important}
+@media (max-width:720px){
+  .cx-stats{padding:12px}
+  .cv-row{grid-template-columns:1fr;gap:4px}
+  .cv{grid-template-columns:minmax(0,1.1fr) 1fr;gap:8px}
+  .cv-eur{font-size:26px}
+  .ss .car-img{max-width:70px}
+}
+
+/* rotación opción A */
+.ss .hrw{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15;display:flex;flex-wrap:wrap;justify-content:center;column-gap:4px;text-align:center}
+.ss .hrw span{color:var(--c);font-weight:600}
+.ss .mini{width:92%;height:8px;border-radius:4px;background:var(--grid);position:relative;overflow:hidden;margin-top:2px}
+.ss .mini span{position:absolute;top:0;bottom:0;background:var(--c);border-radius:4px}
+@media (max-width:720px){.ss .hrw{font-size:13.5px;flex-direction:column;align-items:center;row-gap:0}.ss .hrw span{font-size:10px;line-height:1}}
 @media (max-width:520px){h1{font-size:22px}.chart{height:260px}.kpi .val{font-size:22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -393,7 +506,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
     </button>
-    <span class="eyebrow">v1.5</span>
+    <span class="eyebrow">v1.6</span>
     <h1>Panel Energético</h1>
     <div class="meta" id="meta"></div>
   </header>
@@ -516,43 +629,20 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
   <section id="coches" aria-labelledby="h-coches">
     <div class="sec-head">
       <h2 id="h-coches">Carga de coches</h2>
-      <span class="tag con">con impuestos vigentes</span>
-    </div>
-    <div class="veredicto" id="cx-veredicto"></div>
-
-    <div class="grid2">
-      <div class="panel">
-        <div class="panel-head"><h3 id="cx-h-precio">Precio por periodo frente al excedente</h3></div>
-        <div id="cx-precios"></div>
-        <p class="det" id="cx-precio-nota"></p>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h3>Qué dicen tus datos</h3><span class="chip warn">estimación débil</span></div>
-        <div class="tbl"><table id="cx-datos"></table></div>
-        <p class="det" id="cx-datos-nota"></p>
+      <div class="seg" role="group" aria-label="Época del año" id="cx-est">
+        <button type="button" data-e="ver" aria-pressed="true">☀︎ Verano</button>
+        <button type="button" data-e="inv" aria-pressed="false">❄︎ Invierno</button>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-head"><h3>Simulador de carga</h3><span class="sub">Ajusta los supuestos; se guardan en este navegador</span></div>
-      <div class="inputs" id="cx-inputs"></div>
-      <div class="kpis" id="cx-res"></div>
-    </div>
+    <div class="cx-stats" id="cx-stats"></div>
 
     <div class="panel">
-      <div class="panel-head"><h3>Rotación semanal · un enchufe</h3>
-        <div class="legend"><span><i style="background:var(--s1)"></i>P1 punta</span><span><i style="background:var(--s2)"></i>P2 llano</span><span><i style="background:var(--s3)"></i>P3 valle</span><span><b class="pill b">X3</b> BMW X3</span><span><b class="pill t">M3</b> Tesla</span></div>
-      </div>
-      <div class="tbl"><table id="cx-rot"></table></div>
-      <div class="tbl"><div class="semana" id="cx-semana"></div></div>
-      <p class="det">Festivos nacionales: todo el día en P3, igual que sábado y domingo.</p>
+      <div class="panel-head"><h3>Rotación semanal · un enchufe</h3><span class="sub">Horario en que cada coche queda enchufado · todo en valle</span></div>
+      <div class="cx-week" id="cx-week"></div>
     </div>
 
-    <div class="panel">
-      <div class="panel-head"><h3>Consejos</h3></div>
-      <ol class="consejos" id="cx-consejos"></ol>
-    </div>
-    <div class="notes" id="cx-notas"></div>
+    <div class="cx-cards" id="cx-cards"></div>
   </section>
 
   <footer>Fuente: facturas y app de las placas. Solo CASA-01, fechas, kWh, kW y €.</footer>
@@ -961,146 +1051,94 @@ cargar().then(({d,t})=>{
     marcar(location.hash&&document.getElementById(location.hash.slice(1))?location.hash.slice(1):"resumen");
     links.forEach(a=>a.addEventListener("click",()=>marcar(a.dataset.sec)));
   })();
-  /* ---------- Coches ---------- */
+  /* ---------- Coches (recomendaciones) ---------- */
   (function coches(){
-    const T=t.vigente, FX=t.fiscalidad_vigente, KTAX=(1+FX.iee_pct/100)*(1+FX.iva_pct/100);
-    const DEF={phev_bat:20,phev_cons:30,phev_kmd:25,phev_kmf:30,bev_bat:60,bev_cons:18,bev_kmd:60,bev_kmf:60,kw:3.7,fin:7.5,ef:90,base_kw:1.5};
-    let P=Object.assign({},DEF);
-    try{Object.assign(P,JSON.parse(localStorage.getItem("casa01-coches3")||"{}"))}catch(e){}
-    const e=x=>x*KTAX, eu=(x,dd=2)=>fmt(e(x),dd)+" €";
-    const pr=T.energia_eur_kwh, exc=T.excedente_eur_kwh, pot=T.potencia;
-    const campos=[
-      ["phev_bat","X3 · batería útil","kWh",5,30,0.5],
-      ["phev_cons","X3 · consumo","kWh/100 km",15,40,0.5],
-      ["phev_kmd","X3 · km al día (L-V)","km",0,300,1],
-      ["phev_kmf","X3 · km del fin de semana","km",0,600,5],
-      ["bev_bat","Tesla · batería útil","kWh",30,90,0.5],
-      ["bev_cons","Tesla · consumo","kWh/100 km",10,30,0.5],
-      ["bev_kmd","Tesla · km al día (L-V)","km",0,500,1],
-      ["bev_kmf","Tesla · km del fin de semana","km",0,1000,5],
-      ["kw","Potencia del cargador","kW",1,11,0.1],
-      ["fin","Desconexión entre semana (desde 0:00)","h",1,8,0.25],
-      ["ef","Eficiencia de carga","%",70,98,1],
-      ["base_kw","Casa de noche sin coche","kW",0,7,0.1]];
-    document.getElementById("cx-inputs").innerHTML=campos.map(([k,l,u,mi,ma,st])=>
-      `<label for="cx-${k}">${l}<span class="row"><input type="number" id="cx-${k}" min="${mi}" max="${ma}" step="${st}" value="${P[k]}"><small>${u}</small></span></label>`).join("")+
-      `<div class="amp" role="group" aria-label="Potencia típica del cargador">${[["16 A",3.7],["20 A",4.6],["32 A",7.4]].map(([l,v])=>`<button type="button" data-kw="${v}">${l} · ${fmt(v,1)} kW</button>`).join("")}</div>`;
-    const guardar=()=>{try{localStorage.setItem("casa01-coches3",JSON.stringify(P))}catch(e){}};
-    campos.forEach(([k])=>document.getElementById("cx-"+k).addEventListener("input",ev=>{const v=parseFloat(ev.target.value);if(!isNaN(v)){P[k]=v;guardar();pintar()}}));
-    document.querySelectorAll("#cx-inputs .amp button").forEach(b=>b.onclick=()=>{P.kw=+b.dataset.kw;document.getElementById("cx-kw").value=P.kw;guardar();pintar()});
+    const FX=t.fiscalidad_vigente, KX=(1+FX.iee_pct/100)*(1+FX.iva_pct/100), pr=t.vigente.energia_eur_kwh;
+    const P3c=pr.P3*KX, EF=0.9, KW=7.4;
+    const BASE={X:{cons:30,kmd:25,kmf:30,bat:20},T:{cons:16,kmd:60,kmf:60,bat:60}};
+    const EST={ver:{f:1,nom:"Verano (abr–sep)"},inv:{f:1.2,nom:"Invierno (nov–mar)"}};
+    let est="ver";
+    try{const g=localStorage.getItem("casa01-est");if(EST[g])est=g}catch(e){}
+    const ic={
+      moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>',
+      clock:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      bolt:'<path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>',
+      bat:'<rect x="3" y="7" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M21 10.5v3M6 10v4M9.5 10v4M13 10v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      therm:'<path d="M10 4.5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0v-9Z" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 9v7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      cal:'<rect x="4" y="5.5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      sun:'<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      home:'<path d="M4 11 12 4l8 7v8.5H4V11Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M10 19.5v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.9"/>',
+      car:'<path d="M5 15.5v-3.5l2-5h10l2 5v3.5M3.5 15.5h17M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="7.5" cy="18" r="1.6" fill="currentColor"/><circle cx="16.5" cy="18" r="1.6" fill="currentColor"/>',
+      snow:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      warn:'<path d="M12 4 21 19.5H3L12 4Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 10v4.5M12 17v.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      ban:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6 6l12 12" stroke="currentColor" stroke-width="1.9"/>'};
+    const svg=k=>`<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">${ic[k]}</svg>`;
+    const hh=x=>{const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
 
-    const j25=d.find(r=>r.mes==="2025-06"), j26=d.find(r=>r.mes==="2026-06"), dia=(r,k)=>r[k]/r.dias;
-    const DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
-    function hh(x){const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")}
-    function periodoHora(dw,h){ if(dw>=5)return 3; if(h<8)return 3; if((h>=10&&h<14)||(h>=18&&h<22))return 1; return 2; }
+    const CARDS=[
+      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"X3 lunes, miércoles y viernes; Tesla martes y jueves. Fin de semana: X3 hasta el sábado a mediodía, Tesla hasta el domingo a mediodía y luego el X3. Los cambios siempre de día o por la tarde."},
+      {e:"all",i:"bolt",c:"ok",h:"32 A con control dinámico",b:"seguro",p:"El ControlBox baja la carga si la casa consume más. Carga rápida sin que salte el limitador."},
+      {e:"all",i:"bat",h:"Tesla al 100 % (LFP)",p:"Límite de carga al 100 % y una carga completa a la semana, mejor en fin de semana."},
+      {e:"all",i:"therm",h:"Climatiza enchufado antes de las 7:30",p:"Después el Trydan corta y el coche usaría su propia batería."},
+      {e:"all",i:"cal",h:"Festivos entre semana",p:"Son valle todo el día, pero el temporizador no lo sabe: activa la carga a mano."},
+      {e:"all",i:"ban",h:"Nunca en modo red de 10 a 14 ni de 18 a 22 h (L-V)",p:"Es punta: 2,5 veces más caro que el valle."},
+      {e:"ver",i:"sun",c:"sol",h:"Fin de semana: «FV + mínima potencia» de 11 a 18 h",b:"sin riesgo",p:"Absorbe el excedente de las placas y completa con valle. Todo el fin de semana es P3."},
+      {e:"inv",i:"clock",c:"frio",h:"Tesla con «Salida programada» a las 7:30",p:"La carga termina justo antes de salir: batería templada, carga y regenera mejor."},
+      {e:"inv",i:"snow",c:"frio",h:"Sin modos solares de noviembre a febrero",p:"Apenas hay excedente; carga siempre en valle."}
+    ];
 
-    /* sesiones semanales: [día (0=lun), inicio h, fin h, coche] */
-    function sesiones(){
-      const f=P.fin;
-      return [[0,0,f,"T"],[1,0,f,"X"],[2,0,f,"T"],[3,0,f,"X"],[4,0,f,"T"],
-              [5,0,13,"X"],[5,13,24,"T"],[6,10,22,"X"]];
+    function calc(){
+      const f=EST[est].f, X=BASE.X, T=BASE.T;
+      const xd=X.kmd*X.cons/100*f, td=T.kmd*T.cons/100*f;
+      const xw=5*xd+X.kmf*X.cons/100*f, tw=5*td+T.kmf*T.cons/100*f;
+      const red=(xw+tw)/EF, mes=red*52/12;
+      return{xd,td,mes,eur:mes*P3c,tes2:2*td/EF/KW,x2:2*xd/EF/KW,xmin:Math.max(0,1-2*xd/X.bat),tw:tw/EF,xw:xw/EF};
     }
-    /* simulación de 3 semanas; se informa la tercera */
-    function simular(kw){
-      const ef=P.ef/100, car={X:{bat:P.phev_bat,soc:P.phev_bat,min:1,gas:0,red:0},T:{bat:P.bev_bat,soc:P.bev_bat,min:1,gas:0,red:0}};
-      const uso={X:[...Array(5).fill(P.phev_kmd),P.phev_kmf/2,P.phev_kmf/2].map(k=>k*P.phev_cons/100),
-                 T:[...Array(5).fill(P.bev_kmd),P.bev_kmf/2,P.bev_kmf/2].map(k=>k*P.bev_cons/100)};
-      const S=sesiones(); let det=[];
-      for(let w=0;w<3;w++){
-        if(w===2){car.X.min=car.T.min=1;car.X.red=car.T.red=0;car.X.gas=car.T.gas=0;det=[]}
-        for(let dw=0;dw<7;dw++){
-          const ses=S.filter(s=>s[0]===dw), noct=ses.filter(s=>s[1]===0), diur=ses.filter(s=>s[1]>0);
-          const carga=s=>{const c=car[s[3]],h=s[2]-s[1],need=c.bat-c.soc,got=Math.min(need,h*kw*ef);c.soc+=got;c.red+=got/ef;det.push({s,kwh:got/ef,h:got/ef/kw,lleno:c.soc>=c.bat-0.01})};
-          noct.forEach(carga);
-          for(const k of ["X","T"]){const c=car[k];c.soc-=uso[k][dw];if(c.soc<0){c.gas+=-c.soc;c.soc=0}c.min=Math.min(c.min,c.soc/c.bat)}
-          diur.forEach(carga);
-        }
-      }
-      return {car,det};
+
+    function strip(nm,sub,tram,ev){
+      return `<div class="strip"><div class="nm">${nm}<span>${sub}</span></div><div class="bar24">
+        <div class="tramos24">${tram.map(p=>`<i style="background:var(--s${p===3?3:p===2?2:1})"></i>`).join("")}</div>
+        <div class="ev">${ev.map(e=>`<span class="${e.c}" style="left:${e.a/24*100}%;width:${(e.b-e.a)/24*100}%">${e.t}</span>`).join("")}</div>
+        <div class="hrs">${Array.from({length:24},(_,h)=>`<span>${h}</span>`).join("")}</div></div></div>`;
     }
 
     function pintar(){
-      const ef=P.ef/100, R=simular(P.kw), X=R.car.X, Tt=R.car.T, mes=52/12;
-      const R20=simular(4.6);
-      const dX=P.phev_kmd*P.phev_cons/100, dT=P.bev_kmd*P.bev_cons/100;
-      const okX=X.gas<0.05, okT=Tt.gas<0.05&&Tt.min>=0.2, pico=P.base_kw+P.kw, okPot=pico<=pot.P2.kw;
-      const finP2=P.fin>8;
-      /* veredicto */
-      const v=document.getElementById("cx-veredicto"), ok=okX&&okT&&okPot&&!finP2;
-      v.className="veredicto"+(ok?"":" warn");
-      const titular=ok?`Con un enchufe basta: rota un coche por noche y todo queda en valle.`:
-        !okPot?`El cargador a ${fmt(P.kw,1)} kW con la casa (${fmt(pico,1)} kW) supera los ${fmt(pot.P2.kw,1)} kW contratados.`:
-        !okX?`El X3 no llega con la rotación: usaría gasolina unos ${fmt(X.gas*52/P.phev_cons*100/52,0)} km/semana.`:
-        !okT?`El Tesla baja del 20 % con esta rotación${R20.car.T.min>=0.2?"; con 20 A (4,6 kW) se resuelve":""}.`:
-        `La desconexión pasa de las 8:00: la última parte de la carga ya sería P2.`;
-      v.innerHTML=`<b>${titular}</b><span class="det">Coches: ${fmt((X.red+Tt.red)*mes)} kWh/mes de red · ${eu((X.red+Tt.red)*mes*pr.P3,0)}/mes con impuestos (X3 ${eu(X.red*mes*pr.P3,0)}, Tesla ${eu(Tt.red*mes*pr.P3,0)}).</span>`;
-
-      /* precios */
-      const filas=[["P1 punta",pr.P1,"var(--s1)"],["P2 llano",pr.P2,"var(--s2)"],["P3 valle",pr.P3,"var(--s3)"],["Excedente",exc,"var(--s4)"]], mx=pr.P1;
-      document.getElementById("cx-h-precio").textContent="Precio por periodo frente al excedente · €/kWh";
-      document.getElementById("cx-precios").innerHTML=filas.map(([n,p,c])=>`<div class="pbar"><span>${n}</span><span class="track"><span style="width:${p/mx*100}%;background:${c}"></span></span><span class="n">${fmt(e(p),4)}</span></div>`).join("")+
-        `<div class="tbl"><table><thead><tr><th class="l">Coste por 100 km</th><th>kWh red</th><th>P1</th><th>P2</th><th>P3</th><th>Solar*</th></tr></thead><tbody>
-          ${[["X3",P.phev_cons],["Tesla",P.bev_cons]].map(([n,c])=>{const k=c/ef;return `<tr><td>${n}</td><td>${fmt(k,1)}</td><td>${eu(k*pr.P1)}</td><td>${eu(k*pr.P2)}</td><td><b>${eu(k*pr.P3)}</b></td><td>${eu(k*exc)}</td></tr>`}).join("")}</tbody></table></div>`;
-      document.getElementById("cx-precio-nota").innerHTML=`Con impuestos vigentes. *Solar = lo que dejas de compensar. Cargar con sol en vez de en valle ahorra solo ${fmt(e(pr.P3-exc),4)} €/kWh; entre semana a mediodía es P1, así que no compensa perseguir el sol.`;
-
-      /* datos */
-      const dP3=dia(j26,"red_P3_kWh")-dia(j25,"red_P3_kWh"), dC=dia(j26,"consumo")-dia(j25,"consumo");
-      const x3dia=(5*dX+P.phev_kmf*P.phev_cons/100)/7/ef;
-      document.getElementById("cx-datos").innerHTML=`<thead><tr><th class="l">kWh/día</th><th>jun-25 (E0)</th><th>jun-26 (E1)</th><th>Diferencia</th></tr></thead><tbody>
-        <tr><td>Consumo total</td><td>${fmt(dia(j25,"consumo"),1)}</td><td>${fmt(dia(j26,"consumo"),1)}</td><td><b>+${fmt(dC,1)}</b></td></tr>
-        <tr><td>Red P3 valle</td><td>${fmt(dia(j25,"red_P3_kWh"),1)}</td><td>${fmt(dia(j26,"red_P3_kWh"),1)}</td><td><b>+${fmt(dP3,1)}</b></td></tr></tbody>`;
-      document.getElementById("cx-datos-nota").innerHTML=`El X3 carga siempre en valle: el aumento de P3 (+${fmt(dP3,1)} kWh/día) es la mejor aproximación. Con ${P.phev_kmd} km/día y ${fmt(P.phev_cons,0)} kWh/100 km el X3 explica ~${fmt(x3dia,1)} kWh/día, coherente con el dato. Estimación débil: E0 es un solo mes.`;
-
-      /* resultados */
-      const sem=(c,t)=>`<span class="sem ${c}">${t}</span>`;
-      const noches=R.det.filter(x=>x.s[0]<5&&x.s[1]===0), maxN=Math.max(...noches.map(x=>x.h));
-      document.getElementById("cx-res").innerHTML=[
-        `<div class="kpi"><div class="lbl"><span>X3</span></div><div class="val">${fmt(dX,1)}<small>kWh/día L-V</small></div><div class="det">Autonomía eléctrica ~${fmt(P.phev_bat/P.phev_cons*100,0)} km · mínimo ${fmt(X.min*100,0)} % · ${okX?sem("ok","sin gasolina"):sem("ko","usa gasolina")}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Tesla</span></div><div class="val">${fmt(dT,1)}<small>kWh/día L-V</small></div><div class="det">Autonomía ~${fmt(P.bev_bat/P.bev_cons*100,0)} km · mínimo ${fmt(Tt.min*100,0)} % · ${okT?sem("ok","con margen"):sem("ko","margen bajo")}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Noche más larga</span></div><div class="val">${hh(maxN)}<small>h de ${hh(P.fin)}</small></div><div class="det">A ${fmt(P.kw,1)} kW caben ${fmt(P.fin*P.kw,0)} kWh de red por noche${R20.car.T.min>Tt.min+0.02&&P.kw<4.6?` · con 20 A (4,6 kW) el Tesla no bajaría del ${fmt(R20.car.T.min*100,0)} %`:""}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Potencia de noche</span><span class="tag">contratado ${fmt(pot.P2.kw,1)} kW</span></div><div class="val">${fmt(pico,1)}<small>kW de pico</small></div><div class="det">Casa ${fmt(P.base_kw,1)} + un coche ${fmt(P.kw,1)} kW · ${okPot?sem("ok","dentro"):sem("ko","supera la potencia")}</div></div>`,
-        `<div class="kpi"><div class="lbl"><span>Carga completa 0 → 100 %</span></div><div class="pair">
-           <div><div class="val">${hh(P.phev_bat/ef/P.kw)}<small>h</small></div><div class="det">X3</div></div>
-           <div><div class="val">${hh(P.bev_bat/ef/P.kw)}<small>h</small></div><div class="det">Tesla</div></div></div><div class="det">Referencia: con la rotación no hace falta.</div></div>`
-      ].join("");
-
-      /* tabla de rotación */
-      const nom={X:"X3",T:"Tesla"}, nombreSes=s=>s[1]===0&&s[0]<5?`Noche ${DIAS[(s[0]+6)%7]} → ${DIAS[s[0]]}`:s[1]===0?`Noche Vie → Sáb`:`${DIAS[s[0]]} desde las ${s[1]}:00`;
-      document.getElementById("cx-rot").innerHTML=`<thead><tr><th class="l">Sesión</th><th class="l">Coche</th><th>Carga (kWh de red)</th><th>Horas</th><th class="l">Termina</th></tr></thead><tbody>`+
-        R.det.map(x=>`<tr><td class="l">${nombreSes(x.s)}</td><td class="l"><b class="pill ${x.s[3]==="X"?"b":"t"}">${nom[x.s[3]]}</b></td><td>${fmt(x.kwh,1)}</td><td>${hh(x.h)}</td><td class="l">${x.kwh<0.05?"ya lleno":hh(x.s[1]+x.h)+(x.lleno?" · 100 %":" · sin llenar")}</td></tr>`).join("")+"</tbody>";
-
-      /* cuadrícula semanal */
-      const g=document.getElementById("cx-semana");
-      let html='<span></span>'+Array.from({length:24},(_,h)=>`<span class="h">${h}</span>`).join("");
-      for(let dw=0;dw<7;dw++){
-        html+=`<span class="d">${["L","M","X","J","V","S","D"][dw]}</span>`;
-        for(let h=0;h<24;h++){
-          const p=periodoHora(dw,h), col=p===1?"var(--s1)":p===2?"var(--s2)":"var(--s3)";
-          const x=R.det.find(z=>z.s[0]===dw&&h>=z.s[1]&&h<z.s[1]+Math.ceil(z.h)&&z.kwh>0.05);
-          html+=`<span class="c" style="background:${col}" title="${DIAS[dw]} ${h}:00 · P${p}">${x?`<b class="pill ${x.s[3]==="X"?"b":"t"}">${x.s[3]==="X"?"X3":"M3"}</b>`:""}</span>`;
-        }
-      }
-      g.innerHTML=html;
-
-      /* consejos */
-      document.getElementById("cx-consejos").innerHTML=[
-        `<b>Un coche por noche, alternando.</b> Tesla las noches de dom→lun, mar→mié y jue→vie; X3 las de lun→mar y mié→jue. El X3 aguanta 2 días (${fmt(2*dX,1)} de ${fmt(P.phev_bat,0)} kWh) y el Tesla tiene batería de sobra para 2 días.`,
-        `<b>Cambia el cable por la tarde, al llegar a casa.</b> Así lo conectado a las 0:00 carga sin que nadie se levante. Programa el inicio a las 0:00 en ambos coches (My BMW y app de Tesla).`,
-        `<b>Fin de semana: X3 el sábado por la mañana y el Tesla desde el mediodía, hasta el 100 %.</b> Todo el fin de semana es P3 y la parte que cubra el sol es extra. El Tesla LFP debe llegar al 100 % al menos una vez por semana.`,
-        `<b>Domingo de día, el X3; domingo por la noche, el Tesla.</b> Así el lunes salen los dos con batería.`,
-        `<b>Tesla con límite de carga al 100 %.</b> El coste se controla con la hora de inicio, no con el %.`,
-        P.kw<4.6?`<b>Si el cargador lo permite, ponlo a 20 A (4,6 kW).</b> Ganas ~${fmt(P.fin*(4.6-P.kw),0)} kWh por noche y el pico (${fmt(P.base_kw+4.6,1)} kW) sigue por debajo de ${fmt(pot.P2.kw,1)} kW. A 32 A (7,4 kW) superarías la potencia con la casa encendida.`:`<b>No subas a 32 A sin subir potencia.</b> Con la casa encendida pasarías de ${fmt(pot.P2.kw,1)} kW.`,
-        `<b>No hace falta subir potencia.</b> Con un solo enchufe nunca cargan los dos a la vez.`,
-        `<b>Preacondiciona antes de las 7:30, aún conectado.</b> La energía sale de la red en P3 y no de la batería.`,
-        `<b>En invierno cuenta un 15-25 % más de consumo</b> en ambos coches. Si el Tesla va justo, añádele la noche del lunes o sube a 20 A.`,
-        `<b>No persigas el sol entre semana.</b> De 10 a 14 h L-V es P1: lo que no cubran las placas cuesta ${fmt(e(pr.P1),4)} €/kWh.`
-      ].map(x=>`<li>${x}</li>`).join("");
-
-      document.getElementById("cx-notas").innerHTML=[
-        `Supuestos: X3 con ${fmt(P.phev_bat,0)} kWh útiles y ${fmt(P.phev_cons,0)} kWh/100 km; Tesla Model 3 Standard (LFP, desde nov-2026) con ${fmt(P.bev_bat,0)} kWh útiles y ${fmt(P.bev_cons,0)} kWh/100 km. Simulación de 3 semanas con la rotación fija; se muestra la tercera. Fin de semana: km repartidos a partes iguales entre sábado y domingo.`,
-        `Potencia del cargador desconocida: por defecto 3,7 kW (16 A), lo más prudente con ${fmt(pot.P2.kw,1)} kW contratados. Precios de la tarifa vigente con IEE ${fmt(FX.iee_pct,2)} % e IVA ${FX.iva_pct} %.`
-      ].map(p=>`<p>${p}</p>`).join("");
+      const c=calc(), ver=est==="ver";
+      document.querySelectorAll("#cx-est button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.e===est));
+      /* «Llenar el depósito» según la estación del conmutador */
+      const MESES=est==="ver"?[4,5,6,7,8,9]:[10,11,12,1,2,3];
+      const filas=d.slice(-12).filter(r=>MESES.includes(+r.mes.slice(5,7)));
+      const excDia=filas.reduce((a,r)=>a+r.excedente_kWh,0)/filas.reduce((a,r)=>a+r.dias,0);
+      const solarSem=excDia*2*0.85;                         /* excedente de sábado y domingo entre 11 y 18 h (~85 % del diario) */
+      const fA=EST[est].f, X=BASE.X, T=BASE.T;
+      const redSem=((5*X.kmd+X.kmf)*X.cons+(5*T.kmd+T.kmf)*T.cons)/100*fA/EF;
+      const shSol=Math.min(1,solarSem/redSem), EXc=t.vigente.excedente_eur_kwh*KX;
+      const pMed=P3c*(1-shSol)+EXc*shSol;
+      const lleno=b=>b/EF*pMed, km100=c=>c*fA/EF*pMed;
+      const carTile=(k,nm,img,c)=>`<div class="cv cv-${k}">
+          <img src="${img}" alt="${nm}" loading="lazy">
+          <div class="cv-info"><span class="cv-nm">${nm}</span>
+            <span class="cv-eur">${fmt(lleno(c.bat),2)}<small> €</small></span>
+            <span class="cv-sub">llenar ${fmt(c.bat,0)} kWh · ${fmt(km100(c.cons),2)} €/100 km</span></div></div>`;
+      document.getElementById("cx-stats").innerHTML=
+        `<div class="cv-head"><span class="cv-t">Lo que cuesta llenar el «depósito»</span><span class="cv-tot">Los dos: <b>${fmt(lleno(X.bat)+lleno(T.bat),2)} €</b></span></div>
+         <div class="cv-row">${carTile("t","Tesla Model 3","img/tesla-520.png",T)}${carTile("x","BMW X3 30e","img/x3-520.png",X)}</div>
+         <p class="cx-fn">De 0 a 100 % en ${est==="ver"?"verano":"invierno"}, con impuestos: ${fmt(pMed,4)} €/kWh (valle${shSol>=0.005?`, ~${fmt(shSol*100,0)} % con excedente solar del finde`:""}) y 10 % de pérdidas. Sin potencia.</p>`;
+      const DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"], hoy=(new Date().getDay()+6)%7;
+      /* ventanas en las que el coche queda enchufado: los cambios de coche nunca son de madrugada */
+      const ses=[[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],
+                 [["X",0,12],["T",12,24]],[["T",0,12],["X",12,24]]];
+      const hm=x=>x>=24?"23:59":Math.floor(x)+":"+String(Math.round((x%1)*60)).padStart(2,"0");
+      document.getElementById("cx-week").innerHTML=DIAS.map((dn,i)=>`<div class="wd${i===hoy?" hoy":""}${i>=5?" fds":""}">
+        <div class="wd-h"><b>${dn}</b>${i===hoy?'<span class="hoy-b">hoy</span>':""}</div>
+        ${ses[i].map(([k,a,b])=>`<div class="ss ${k==="T"?"ss-t":"ss-x"}"><img class="car-img" src="${k==="T"?"img/tesla-520.png":"img/x3-520.png"}" alt=""><div class="nm">${k==="T"?"Tesla":"X3"}</div>
+          <div class="hrw">${hm(a)}<span>→</span>${hm(b)}</div>
+          <div class="mini" role="img" aria-label="Enchufado de ${hm(a)} a ${hm(b)}"><span style="left:${a/24*100}%;width:${(b-a)/24*100}%"></span></div></div>`).join("")}
+      </div>`).join("");
+      document.getElementById("cx-cards").innerHTML=CARDS.filter(x=>x.e==="all"||x.e===est).map(x=>
+        `<div class="rc ${x.c||""}"><span class="ic">${svg(x.i)}</span><h4>${x.h}${x.b?`<span class="bdg">${x.b}</span>`:""}</h4><p>${x.p}</p></div>`).join("");
     }
+    document.querySelectorAll("#cx-est button").forEach(b=>b.onclick=()=>{est=b.dataset.e;try{localStorage.setItem("casa01-est",est)}catch(e){}pintar()});
     pintar();
   })();
 
