@@ -679,15 +679,16 @@ cargar().then(({d,t})=>{
   const etapa=ult.etapa===0?"E0 · sin coches":ult.etapa===1?"E1 · PHEV":"E2 · PHEV + BEV";
   document.getElementById("meta").innerHTML=
     `<span>Periodo de análisis: ${lblMes(d[0].mes)} → ${lblMes(ult.mes)}</span>`+
-    `<span class="chip">Tarifa vigente: ${v.comercializadora} ${v.producto} · desde ${fecha(v.desde)}<button type="button" class="i-btn" id="ver-tarifa" aria-haspopup="dialog" aria-label="Ver precios de la tarifa sin impuestos" title="Precios sin impuestos"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></span>`;
+    `<span class="chip">Tarifa vigente · desde ${fecha(v.desde)}<button type="button" class="i-btn" id="ver-tarifa" aria-haspopup="dialog" aria-label="Ver precios de la tarifa sin impuestos" title="Precios sin impuestos"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></span>`;
 
   /* ---------- Tarifa sin impuestos (consulta) ---------- */
   (function(){
     const m=document.getElementById("m-tarifa"), pw=v.potencia, kw=pw.P1.kw;
+    document.getElementById("mt-h").textContent=`${v.comercializadora} · ${v.producto}`;
     const potAnio=(pw.P1.eur_kw_dia*pw.P1.kw+pw.P2.eur_kw_dia*pw.P2.kw)*365;
     const fijoAnio=(v.bono_social_eur_dia+v.alquiler_contador_eur_dia)*365;
     document.getElementById("mt-body").innerHTML=`
-      <p class="mt-sub">${v.comercializadora} ${v.producto} · peaje ${v.peaje} · desde ${fecha(v.desde)} · <b>precios sin impuestos</b></p>
+      <p class="mt-sub">Peaje ${v.peaje} · vigente desde ${fecha(v.desde)} · <b>precios sin impuestos</b></p>
       <table class="mt"><thead><tr><th class="l">Energía</th><th>€/kWh</th><th class="l">Horario</th></tr></thead><tbody>
         <tr><td class="l"><i style="background:var(--s1)"></i>P1 punta</td><td>${fmt(v.energia_eur_kwh.P1,4)}</td><td class="l">L-V 10-14 y 18-22</td></tr>
         <tr><td class="l"><i style="background:var(--s2)"></i>P2 llano</td><td>${fmt(v.energia_eur_kwh.P2,4)}</td><td class="l">L-V 8-10, 14-18 y 22-24</td></tr>
