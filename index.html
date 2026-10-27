@@ -492,6 +492,30 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
 .ss .mini{width:92%;height:8px;border-radius:4px;background:var(--grid);position:relative;overflow:hidden;margin-top:2px}
 .ss .mini span{position:absolute;top:0;bottom:0;background:var(--c);border-radius:4px}
 @media (max-width:720px){.ss .hrw{font-size:13.5px;flex-direction:column;align-items:center;row-gap:0}.ss .hrw span{font-size:10px;line-height:1}}
+/* rotación: hoy en grande + tira semanal */
+.ct{--c:var(--car-t)}.cx{--c:var(--car-x)}
+#cx-week{display:flex!important;flex-direction:column;gap:10px}
+.hoy-hero{display:grid;grid-template-columns:minmax(0,220px) 1fr;gap:18px;align-items:center;padding:14px 18px;border-radius:12px;background:color-mix(in srgb,var(--c) 10%,var(--surface));border:1.5px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.hoy-hero img.car,.hoy-strip img.car{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 5px rgba(0,0,0,.2))}
+.hh-dia{font-size:13px;color:var(--ink-2)}
+.hh-acc{font-size:24px;font-weight:700;line-height:1.2}
+.hh-acc b{color:var(--c)}
+.hh-cu{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--c);margin-top:2px}
+.hh-hr{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.hoy-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.hs{border-radius:9px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--bg)}
+.hs b{font-size:12px}.hs img.car{max-width:56px}
+.hs span{font-size:11px;font-weight:600;color:var(--c)}
+.hs.hoy{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+@media (max-width:720px){
+  .hoy-hero{grid-template-columns:120px 1fr;gap:10px;padding:10px 12px}
+  .hh-acc{font-size:17px}.hh-hr{font-size:22px}
+  .hs img.car{max-width:40px}.hs span{font-size:9.5px}
+}
+/* en Coches el filtro de periodo no aplica */
+.en-coches .secnav{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.en-coches .filtros .periodos,.en-coches #f-custom,.en-coches #f-desc{display:none!important}
+@media (max-width:720px){.en-coches .filtros{display:none!important}}
 @media (max-width:520px){h1{font-size:22px}.chart{height:260px}.kpi .val{font-size:22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -506,13 +530,13 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
     </button>
-    <span class="eyebrow">v1.7</span>
+    <span class="eyebrow">v1.8</span>
     <h1>Panel Energético</h1>
     <div class="meta" id="meta"></div>
   </header>
 
   <div class="filtros" id="filtros">
-    <nav class="secnav" aria-label="Secciones"><a href="#resumen" data-sec="resumen">Resumen</a><a href="#solar" data-sec="solar">Solar</a><a href="#coste-mes" data-sec="coste-mes">Coste</a><a href="#evolucion" data-sec="evolucion">Detalle</a><a href="#coches" data-sec="coches">Coches</a></nav>
+    <nav class="secnav" aria-label="Secciones"><a href="#resumen" data-sec="resumen">Inicio</a><a href="#solar" data-sec="solar">Solar</a><a href="#coste-mes" data-sec="coste-mes">Coste</a><a href="#evolucion" data-sec="evolucion">Detalle</a><a href="#coches" data-sec="coches">Coches</a></nav>
     <div class="periodos" role="group" aria-label="Periodo" id="f-periodo"></div>
     <div class="custom" id="f-custom" hidden>
       <label for="f-desde">Desde</label><select id="f-desde"></select>
@@ -638,7 +662,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
     <div class="cx-stats" id="cx-stats"></div>
 
     <div class="panel">
-      <div class="panel-head"><h3>Rotación semanal · un enchufe</h3><span class="sub">Horario en que cada coche queda enchufado · todo en valle</span></div>
+      <div class="panel-head"><h3>Qué coche enchufar</h3><span class="sub">Un enchufe · los cambios, siempre por la tarde</span></div>
       <div class="cx-week" id="cx-week"></div>
     </div>
 
@@ -648,7 +672,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
   <footer>Fuente: facturas y app de las placas. Solo CASA-01, fechas, kWh, kW y €.</footer>
 </div>
 
-<nav class="tabbar" aria-label="Secciones"><a href="#resumen" data-sec="resumen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Resumen</span></a><a href="#solar" data-sec="solar"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Solar</span></a><a href="#coste-mes" data-sec="coste-mes"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M17.5 6.5A7 7 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Coste</span></a><a href="#evolucion" data-sec="evolucion"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Detalle</span></a><a href="#coches" data-sec="coches"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 16v-4l2-5h10l2 5v4M3.5 16h17M7 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM17 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Coches</span></a></nav>
+<nav class="tabbar" aria-label="Secciones"><a href="#resumen" data-sec="resumen"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Inicio</span></a><a href="#solar" data-sec="solar"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Solar</span></a><a href="#coste-mes" data-sec="coste-mes"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M17.5 6.5A7 7 0 1 0 17.5 17.5M4 10.5h9M4 13.5h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Coste</span></a><a href="#evolucion" data-sec="evolucion"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Detalle</span></a><a href="#coches" data-sec="coches"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 16v-4l2-5h10l2 5v4M3.5 16h17M7 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM17 19.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Coches</span></a></nav>
 <div class="modal" id="m-tarifa" hidden role="dialog" aria-modal="true" aria-labelledby="mt-h">
   <div class="modal-card">
     <div class="modal-head"><h3 id="mt-h">Tarifa vigente</h3><button type="button" class="x" id="mt-x" aria-label="Cerrar">✕</button></div>
@@ -1041,7 +1065,7 @@ cargar().then(({d,t})=>{
   /* ---------- Navegación ---------- */
   (function(){
     const links=[...document.querySelectorAll(".secnav a,.tabbar a")];
-    const marcar=id=>links.forEach(a=>a.setAttribute("aria-current",a.dataset.sec===id));
+    const marcar=id=>{links.forEach(a=>a.setAttribute("aria-current",a.dataset.sec===id));document.documentElement.classList.toggle("en-coches",id==="coches")};
     const secs=[...new Set(links.map(a=>a.dataset.sec))].map(id=>document.getElementById(id)).filter(Boolean);
     const vis=new Map();
     const io=new IntersectionObserver(es=>{es.forEach(e=>vis.set(e.target.id,e.isIntersecting?e.intersectionRatio:0));
@@ -1049,7 +1073,12 @@ cargar().then(({d,t})=>{
       {rootMargin:"-120px 0px -45% 0px",threshold:[0,.1,.25,.5,.75,1]});
     secs.forEach(x=>io.observe(x));
     marcar(location.hash&&document.getElementById(location.hash.slice(1))?location.hash.slice(1):"resumen");
-    links.forEach(a=>a.addEventListener("click",()=>marcar(a.dataset.sec)));
+    const ir=id=>{const el=document.getElementById(id);if(!el)return;marcar(id);
+      requestAnimationFrame(()=>{const f=document.getElementById("filtros"),fh=f&&getComputedStyle(f).display!=="none"?f.getBoundingClientRect().height:0;
+        const top=el.getBoundingClientRect().top+scrollY-fh-12-(parseFloat(getComputedStyle(document.documentElement).paddingTop)||0);
+        window.scrollTo({top:Math.max(0,top),behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})});};
+    links.forEach(a=>a.addEventListener("click",ev=>{ev.preventDefault();ir(a.dataset.sec)}));
+    if(location.hash==="#coches")setTimeout(()=>ir("coches"),300);
   })();
   /* ---------- Coches (recomendaciones) ---------- */
   (function coches(){
@@ -1076,7 +1105,7 @@ cargar().then(({d,t})=>{
     const hh=x=>{const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
 
     const CARDS=[
-      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"X3: dom, lun, mié y vie · Tesla: mar, jue y sáb."},
+      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"Enchufa por la tarde: Tesla lun, mié y vie · X3 mar, jue, sáb y dom."},
       {e:"all",i:"bat",h:"Tesla al 100 % (LFP)",p:"Límite de carga al 100 % y una carga completa a la semana, mejor en fin de semana."},
       {e:"all",i:"cal",h:"Festivos entre semana",p:"Son valle todo el día, pero el temporizador no lo sabe: activa la carga a mano."},
       {e:"all",i:"ban",h:"Nunca en modo red de 10 a 14 ni de 18 a 22 h (L-V)",p:"Es punta: 2,5 veces más caro que el valle."},
@@ -1126,16 +1155,18 @@ cargar().then(({d,t})=>{
         `<div class="cv-head"><span class="cv-t">Lo que cuesta llenar el «depósito»</span><span class="cv-tot">Los dos: <b>${fmt(lleno(X.bat)+lleno(T.bat),2)} €</b></span></div>
          <div class="cv-row">${carTile("t","Tesla Model 3","img/tesla-520.png",T)}${carTile("x","BMW X3 30e","img/x3-520.png",X)}</div>
          <p class="cx-fn">De 0 a 100 % en ${est==="ver"?"verano":"invierno"}, con impuestos: ${fmt(pMed,4)} €/kWh (valle${shSol>=0.005?`, ~${fmt(shSol*100,0)} % con excedente solar del finde`:""}) y 10 % de pérdidas. Incluye la parte proporcional de la potencia de valle.</p>`;
-      const DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"], hoy=(new Date().getDay()+6)%7;
-      /* ventanas en las que el coche queda enchufado: los cambios de coche nunca son de madrugada */
-      const ses=[[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],[["T",10,18]],[["X",10,18]]];
-      const hm=x=>x>=24?"23:59":Math.floor(x)+":"+String(Math.round((x%1)*60)).padStart(2,"0");
-      document.getElementById("cx-week").innerHTML=DIAS.map((dn,i)=>`<div class="wd${i===hoy?" hoy":""}${i>=5?" fds":""}">
-        <div class="wd-h"><b>${dn}</b>${i===hoy?'<span class="hoy-b">hoy</span>':""}</div>
-        ${ses[i].map(([k,a,b])=>`<div class="ss ${k==="T"?"ss-t":"ss-x"}"><img class="car-img" src="${k==="T"?"img/tesla-520.png":"img/x3-520.png"}" alt=""><div class="nm">${k==="T"?"Tesla":"X3"}</div>
-          <div class="hrw">${hm(a)}<span>→</span>${hm(b)}</div>
-          <div class="mini" role="img" aria-label="Enchufado de ${hm(a)} a ${hm(b)}"><span style="left:${a/24*100}%;width:${(b-a)/24*100}%"></span></div></div>`).join("")}
-      </div>`).join("");
+      const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"], CORTO=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+      const hoy=(new Date().getDay()+6)%7, IMGC={T:"img/tesla-520.png",X:"img/x3-520.png"}, NMC={T:"Tesla",X:"X3"};
+      /* acción de cada tarde: qué coche enchufar y cuándo carga (los cambios nunca de madrugada) */
+      const ACC=[{k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},
+        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"T",cu:"Mañana",hr:"10:00 → 18:00"},{k:"X",cu:"Mañana",hr:"10:00 → 18:00"},
+        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30",deja:1}];
+      const h0=ACC[hoy], cls=k=>k==="T"?"ct":"cx";
+      document.getElementById("cx-week").innerHTML=`<div class="hoy-hero ${cls(h0.k)}"><img class="car" src="${IMGC[h0.k]}" alt="">
+          <div><div class="hh-dia">Hoy, ${DIAS[hoy].toLowerCase()}</div>
+          <div class="hh-acc">${h0.deja?"Deja el":"Enchufa el"} <b>${NMC[h0.k]}</b>${h0.deja?" enchufado":""}</div>
+          <div class="hh-cu">${h0.cu}</div><div class="hh-hr">${h0.hr}</div></div></div>
+        <div class="hoy-strip">${ACC.map((x,i)=>`<div class="hs ${cls(x.k)}${i===hoy?" hoy":""}" title="${DIAS[i]}: ${x.deja?"deja":"enchufa"} el ${NMC[x.k]} · ${x.cu.toLowerCase()} ${x.hr}"><b>${CORTO[i]}</b><img class="car" src="${IMGC[x.k]}" alt=""><span>${NMC[x.k]}</span></div>`).join("")}</div>`;
       document.getElementById("cx-cards").innerHTML=CARDS.filter(x=>x.e==="all"||x.e===est).map(x=>
         `<div class="rc ${x.c||""}"><span class="ic">${svg(x.i)}</span><h4>${x.h}${x.b?`<span class="bdg">${x.b}</span>`:""}</h4><p>${x.p}</p></div>`).join("");
     }
