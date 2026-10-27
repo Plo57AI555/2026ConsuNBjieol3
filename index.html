@@ -506,7 +506,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
     </button>
-    <span class="eyebrow">v1.6</span>
+    <span class="eyebrow">v1.7</span>
     <h1>Panel Energético</h1>
     <div class="meta" id="meta"></div>
   </header>
@@ -1076,13 +1076,11 @@ cargar().then(({d,t})=>{
     const hh=x=>{const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
 
     const CARDS=[
-      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"X3 lunes, miércoles y viernes; Tesla martes y jueves. Fin de semana: X3 hasta el sábado a mediodía, Tesla hasta el domingo a mediodía y luego el X3. Los cambios siempre de día o por la tarde."},
-      {e:"all",i:"bolt",c:"ok",h:"32 A con control dinámico",b:"seguro",p:"El ControlBox baja la carga si la casa consume más. Carga rápida sin que salte el limitador."},
+      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"X3: dom, lun, mié y vie · Tesla: mar, jue y sáb."},
       {e:"all",i:"bat",h:"Tesla al 100 % (LFP)",p:"Límite de carga al 100 % y una carga completa a la semana, mejor en fin de semana."},
-      {e:"all",i:"therm",h:"Climatiza enchufado antes de las 7:30",p:"Después el Trydan corta y el coche usaría su propia batería."},
       {e:"all",i:"cal",h:"Festivos entre semana",p:"Son valle todo el día, pero el temporizador no lo sabe: activa la carga a mano."},
       {e:"all",i:"ban",h:"Nunca en modo red de 10 a 14 ni de 18 a 22 h (L-V)",p:"Es punta: 2,5 veces más caro que el valle."},
-      {e:"ver",i:"sun",c:"sol",h:"Fin de semana: «FV + mínima potencia» de 11 a 18 h",b:"sin riesgo",p:"Absorbe el excedente de las placas y completa con valle. Todo el fin de semana es P3."},
+      {e:"ver",i:"sun",c:"sol",h:"Fin de semana: «FV + mínima potencia» de 10 a 18 h",b:"sin riesgo",p:"Absorbe el excedente de las placas y completa con valle. Todo el fin de semana es P3."},
       {e:"inv",i:"clock",c:"frio",h:"Tesla con «Salida programada» a las 7:30",p:"La carga termina justo antes de salir: batería templada, carga y regenera mejor."},
       {e:"inv",i:"snow",c:"frio",h:"Sin modos solares de noviembre a febrero",p:"Apenas hay excedente; carga siempre en valle."}
     ];
@@ -1113,7 +1111,11 @@ cargar().then(({d,t})=>{
       const fA=EST[est].f, X=BASE.X, T=BASE.T;
       const redSem=((5*X.kmd+X.kmf)*X.cons+(5*T.kmd+T.kmf)*T.cons)/100*fA/EF;
       const shSol=Math.min(1,solarSem/redSem), EXc=t.vigente.excedente_eur_kwh*KX;
-      const pMed=P3c*(1-shSol)+EXc*shSol;
+      /* kWh de valle con su parte de potencia (P2) e impuestos de cada factura, en los meses de la estación */
+      const shP2=r=>{const h=(t.historial||[]).find(x=>r.fecha_fin<=x.hasta&&r.fecha_fin>=x.desde);
+        const pp=h?h.potencia_eur_kw_dia:{P1:t.vigente.potencia.P1.eur_kw_dia,P2:t.vigente.potencia.P2.eur_kw_dia};return pp.P2/(pp.P1+pp.P2)};
+      const P3pot=filas.reduce((a,r)=>a+(r.red_P3_kWh*r.precio_P3_eur_kWh+r.potencia_eur*shP2(r))*(1+r.iee_tipo_pct/100)*(1+r.iva_tipo_pct/100),0)/filas.reduce((a,r)=>a+r.red_P3_kWh,0);
+      const pMed=P3pot*(1-shSol)+EXc*shSol;
       const lleno=b=>b/EF*pMed, km100=c=>c*fA/EF*pMed;
       const carTile=(k,nm,img,c)=>`<div class="cv cv-${k}">
           <img src="${img}" alt="${nm}" loading="lazy">
@@ -1123,11 +1125,10 @@ cargar().then(({d,t})=>{
       document.getElementById("cx-stats").innerHTML=
         `<div class="cv-head"><span class="cv-t">Lo que cuesta llenar el «depósito»</span><span class="cv-tot">Los dos: <b>${fmt(lleno(X.bat)+lleno(T.bat),2)} €</b></span></div>
          <div class="cv-row">${carTile("t","Tesla Model 3","img/tesla-520.png",T)}${carTile("x","BMW X3 30e","img/x3-520.png",X)}</div>
-         <p class="cx-fn">De 0 a 100 % en ${est==="ver"?"verano":"invierno"}, con impuestos: ${fmt(pMed,4)} €/kWh (valle${shSol>=0.005?`, ~${fmt(shSol*100,0)} % con excedente solar del finde`:""}) y 10 % de pérdidas. Sin potencia.</p>`;
+         <p class="cx-fn">De 0 a 100 % en ${est==="ver"?"verano":"invierno"}, con impuestos: ${fmt(pMed,4)} €/kWh (valle${shSol>=0.005?`, ~${fmt(shSol*100,0)} % con excedente solar del finde`:""}) y 10 % de pérdidas. Incluye la parte proporcional de la potencia de valle.</p>`;
       const DIAS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"], hoy=(new Date().getDay()+6)%7;
       /* ventanas en las que el coche queda enchufado: los cambios de coche nunca son de madrugada */
-      const ses=[[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],
-                 [["X",0,12],["T",12,24]],[["T",0,12],["X",12,24]]];
+      const ses=[[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],[["T",0,7.5]],[["X",0,7.5]],[["T",10,18]],[["X",10,18]]];
       const hm=x=>x>=24?"23:59":Math.floor(x)+":"+String(Math.round((x%1)*60)).padStart(2,"0");
       document.getElementById("cx-week").innerHTML=DIAS.map((dn,i)=>`<div class="wd${i===hoy?" hoy":""}${i>=5?" fds":""}">
         <div class="wd-h"><b>${dn}</b>${i===hoy?'<span class="hoy-b">hoy</span>':""}</div>
