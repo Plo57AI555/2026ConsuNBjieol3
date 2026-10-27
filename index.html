@@ -532,7 +532,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
     </button>
-    <span class="eyebrow">v2.1</span>
+    <span class="eyebrow">v2.2</span>
     <h1>Panel Energético</h1>
     <div class="meta" id="meta"></div>
   </header>
@@ -1111,7 +1111,7 @@ cargar().then(({d,t})=>{
     const hh=x=>{const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
 
     const CARDS=[
-      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"Enchufa por la tarde: Tesla lun, mié y vie · X3 mar, jue, sáb y dom."},
+      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"Enchufa por la tarde: X3 lun, mié, vie y dom · Tesla mar, jue y sáb (el Tesla carga el domingo de día)."},
       {e:"all",i:"bat",h:"Tesla al 100 % (LFP)",p:"Límite de carga al 100 % y una carga completa a la semana, mejor en fin de semana."},
       {e:"all",i:"cal",h:"Festivos entre semana",p:"Son valle todo el día, pero el temporizador no lo sabe: activa la carga a mano."},
       {e:"all",i:"ban",h:"Nunca en modo red de 10 a 14 ni de 18 a 22 h (L-V)",p:"Es punta: 2,5 veces más caro que el valle."},
@@ -1164,9 +1164,9 @@ cargar().then(({d,t})=>{
       const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"], CORTO=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
       const hoy=(new Date().getDay()+6)%7, IMGC={T:"img/tesla-520.png",X:"img/x3-520.png"}, NMC={T:"Tesla",X:"X3"};
       /* acción de cada tarde: qué coche enchufar y cuándo carga (los cambios nunca de madrugada) */
-      const ACC=[{k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},
-        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"T",cu:"Mañana",hr:"10:00 → 18:00"},{k:"X",cu:"Mañana",hr:"10:00 → 18:00"},
-        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30",deja:1}];
+      const ACC=[{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},
+        {k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"X",cu:"Mañana",hr:"10:00 → 18:00"},{k:"T",cu:"Mañana",hr:"10:00 → 18:00"},
+        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30"}];
       const h0=ACC[hoy], cls=k=>k==="T"?"ct":"cx";
       document.getElementById("cx-week").innerHTML=`<div class="hoy-hero ${cls(h0.k)}"><img class="car" src="${IMGC[h0.k]}" alt="">
           <div><div class="hh-dia">Hoy, ${DIAS[hoy].toLowerCase()}</div>
