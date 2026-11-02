@@ -506,6 +506,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
 .hs{border-radius:9px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--bg)}
 .hs b{font-size:12px}.hs img.car{max-width:56px}
 .hs span{font-size:11px;font-weight:600;color:var(--c)}
+.hs span em{font-style:normal;font-weight:700;font-size:10px;display:block;white-space:nowrap}
 .hs.hoy{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
 @media (max-width:720px){
   .hoy-hero{grid-template-columns:120px 1fr;gap:10px;padding:10px 12px}
@@ -532,7 +533,7 @@ table.mt tr.tot td{font-weight:700;border-bottom:0}
       <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.6.6 0 0 0-.8-.7A9.5 9.5 0 1 0 21 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
     </button>
-    <span class="eyebrow">v2.3</span>
+    <span class="eyebrow">v2.4</span>
     <h1>Panel Energético</h1>
     <div class="meta" id="meta"></div>
   </header>
@@ -1111,8 +1112,9 @@ cargar().then(({d,t})=>{
     const hh=x=>{const m=Math.round(x*60);return Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
 
     const CARDS=[
-      {e:"all",i:"moon",h:"Un coche cada día, alternando",p:"Enchufa por la tarde: X3 lun, mié, vie y dom · Tesla mar, jue y sáb (el Tesla carga el domingo de día)."},
-      {e:"all",i:"bat",h:"Tesla al 100 % (LFP)",p:"Límite de carga al 100 % y una carga completa a la semana, mejor en fin de semana."},
+      {e:"all",i:"moon",h:"Rotación semanal",p:"Tesla: miércoles por la tarde (hasta 60 %) y domingo desde las 22:00 (hasta 100 %). X3: el resto de días."},
+      {e:"all",i:"bat",h:"Límite del Tesla: 60 % y 100 % el domingo",p:"Deja el límite en 60 % y súbelo a 100 % el domingo por la tarde. Carga completa una vez por semana, como pide la batería LFP."},
+      {e:"all",i:"clock",h:"Trydan: fin de semana todo el día",p:"Temporizador de sábado y domingo en 0:00–23:59 para que el Tesla empiece el domingo a las 22:00. Todo es valle."},
       {e:"all",i:"cal",h:"Festivos entre semana",p:"Son valle todo el día, pero el temporizador no lo sabe: activa la carga a mano."},
       {e:"all",i:"ban",h:"Nunca en modo red de 10 a 14 ni de 18 a 22 h (L-V)",p:"Es punta: 2,5 veces más caro que el valle."},
       {e:"ver",i:"sun",c:"sol",h:"Fin de semana: «FV + mínima potencia» de 10 a 18 h",b:"sin riesgo",p:"Absorbe el excedente de las placas y completa con valle. Todo el fin de semana es P3."},
@@ -1164,15 +1166,20 @@ cargar().then(({d,t})=>{
       const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"], CORTO=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
       const hoy=(new Date().getDay()+6)%7, IMGC={T:"img/tesla-520.png",X:"img/x3-520.png"}, NMC={T:"Tesla",X:"X3"};
       /* acción de cada tarde: qué coche enchufar y cuándo carga (los cambios nunca de madrugada) */
-      const ACC=[{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},
-        {k:"T",cu:"Esta noche",hr:"0:00 → 7:30"},{k:"X",cu:"Mañana",hr:"10:00 → 18:00"},{k:"T",cu:"Mañana",hr:"10:00 → 18:00"},
-        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30"}];
+      /* Tesla: 2 cargas semanales (jueves hasta 60 %, lunes hasta 100 %); X3 el resto de noches */
+      const ACC=[{k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},
+        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30",deja:1},
+        {k:"T",cu:"Esta noche · hasta 60 %",hr:"0:00 → 7:30",lim:"60 %"},
+        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30"},
+        {k:"X",cu:"Esta noche",hr:"0:00 → 7:30",deja:1},
+        {k:"X",cu:"Hoy y mañana de día",hr:"Todo el día",deja:1},
+        {k:"T",cu:"Esta noche · hasta 100 %",hr:"22:00 → 7:30",lim:"100 %"}];
       const h0=ACC[hoy], cls=k=>k==="T"?"ct":"cx";
       document.getElementById("cx-week").innerHTML=`<div class="hoy-hero ${cls(h0.k)}"><img class="car" src="${IMGC[h0.k]}" alt="">
           <div><div class="hh-dia">Hoy, ${DIAS[hoy].toLowerCase()}</div>
           <div class="hh-acc">${h0.deja?"Deja el":"Enchufa el"} <b>${NMC[h0.k]}</b>${h0.deja?" enchufado":""}</div>
           <div class="hh-cu">${h0.cu}</div><div class="hh-hr">${h0.hr}</div></div></div>
-        <div class="hoy-strip">${ACC.map((x,i)=>`<div class="hs ${cls(x.k)}${i===hoy?" hoy":""}" title="${DIAS[i]}: ${x.deja?"deja":"enchufa"} el ${NMC[x.k]} · ${x.cu.toLowerCase()} ${x.hr}"><b>${CORTO[i]}</b><img class="car" src="${IMGC[x.k]}" alt=""><span>${NMC[x.k]}</span></div>`).join("")}</div>`;
+        <div class="hoy-strip">${ACC.map((x,i)=>`<div class="hs ${cls(x.k)}${i===hoy?" hoy":""}" title="${DIAS[i]}: ${x.deja?"deja":"enchufa"} el ${NMC[x.k]} · ${x.cu.toLowerCase()} ${x.hr}"><b>${CORTO[i]}</b><img class="car" src="${IMGC[x.k]}" alt=""><span>${NMC[x.k]}${x.lim?` <em>${x.lim}</em>`:""}</span></div>`).join("")}</div>`;
       document.getElementById("cx-cards").innerHTML=CARDS.filter(x=>x.e==="all"||x.e===est).map(x=>
         `<div class="rc ${x.c||""}"><span class="ic">${svg(x.i)}</span><h4>${x.h}${x.b?`<span class="bdg">${x.b}</span>`:""}</h4><p>${x.p}</p></div>`).join("");
     }
